@@ -6,11 +6,12 @@
 </head>
 <body>
     <h1>测试1</h1>
-    <input type="file" id="lrcFile" accept=".lrc">
+    <input type="file" id="lrcFile" accept=".lrc" class="file-input">
     <button id="parseBtn">解析LRC文件</button>
     <script>
        const lrcFileInput = document.getElementById('lrcFile');
-       document.getElementById('parseBtn')
+       const parseBtn = document.getElementById('parseBtn');
+       let lrcContent;
        parseBtn.addEventListener('click', function() {
            const file = lrcFileInput.files[0];
            if (!file) {
@@ -20,24 +21,26 @@
            console.log("1");
            const reader = new FileReader();
            reader.onload = function(e) {
+           	     console.log("start");
                     const lrcContent = e.target.result;
-                    jsonlyrics = lrctojson(lrcContent);
+                    const jsonlyrics = lrctojson(lrcContent);
+                    downloadFile(jsonlyrics, 'example.json');
            };
-           console.log(lrcContent);
+           reader.readAsText(file);
        });
        function lrctojson(lrc) {
        	const result = {
             metadata: {},
             lyrics: [],
-            enhancelyrics: []
           };
-
+          let text = "";
+          let totalSeconds = 0;
           const lines = lrc.split('\n');
-          const timeTagRegex = /^\[(\d+):(\d+)\.(\d+)\](.*)$/;
+          const timeTagRegex = /^\[(\d{2}):(\d{2})\.(\d{2})\](.*)/;
           const metadataRegex = /^\[(.*?):(.*)\]$/;
           console.log("2");
           //定义正则表达式
-          let i = 1;
+          let i = 0;
           for (const line of lines) {
           	if (!line.trim()) continue;
                const metadataMatch = line.match(metadataRegex);
@@ -48,50 +51,56 @@
                //获取以及处理meta
                const timeMatch = line.match(timeTagRegex);
                if (timeMatch) {
-                   const minutes = parseInt(timeMatch[1]);
-                   const seconds = parseInt(timeMatch[2]);
-                   const hundredths = parseInt(timeMatch[3]);
-                   const text = timeMatch[4].trim();
+                   text = timeMatch[4];
+                   totalSeconds = parseInt(timeMatch[1]) * 60 + parseInt(timeMatch[2]) + parseInt(timeMatch[3]) / 100;//大部分为到百分位，有一些到千分位
                }
-               const totalSeconds = minutes * 60 + seconds + hundredths / 100;//大部分为到百分位，有一些到千分位
+               
                //获取和处理普通时间
-               const pairlyricif = result.lyrics.findIndex(user => user.name === totalSeconds);
+               const pairlyricif = result.lyrics.findIndex(user => user.time == totalSeconds);
                if (pairlyricif != -1) {
-               	result.lyrics[pairlyricif] = {
-               		...result.lyrics[pairlyricif],
-               		pairlyric: text
-               	};
+               	result.lyrics[pairlyricif].pairlyric = text;
                	continue;
                }
                //处理副歌词
-               adde = enhancelyricsprocessing(text,i);
-               result.lyrics.push(adde)
+               let ei = 0;
+               let eljson = [];
+               if (text.includes('<') && text.includes('>')) {
+                const regex = /<(\d+):(\d+)\.(\d+)>/g;
+                const dregex = /([^<]*)/g;
+                eljson = [];
+                let ttt;
+                let tttc;
+                while ((ttt = regex.exec(text)) !== null) {
+                  if (tttc) {
+                    ei++;
+            	     const totalSecondsStart = parseInt(tttc[1]) * 60 + parseInt(tttc[2]) + parseInt(tttc[3]) / 100;
+            	     const totalSecondsEnd = parseInt(ttt[1]) * 60 + parseInt(ttt[2]) + parseInt(ttt[3]) / 100;//大部分为到百分位，有一些到千分位
+           	     const Duration = totalSecondsEnd - totalSecondsStart;
+           	     const tttd = text.substring(tttc.index + tttc[0].length, ttt.index);
+                    eljson.push({ ordinal: i, Duration: Duration, text: tttd });
+                  }
+                  tttc = ttt;
+                }
+               } else{
+               	ei = 0;
+               }
+               
                //处理增强版lrc格式
                if (text) {
-                   text.replace(/<[^>]*>/g, '');
+                   text = text.replace(/<[^>]*>/g, '');
                    result.lyrics.push({
+                   	   ordinal: i,
                        time: totalSeconds.toFixed(2),
                        text: text,
-                       ordinal: i
+                       eln: ei,
+                       etext: eljson
+                       
                    });
                }
                i++;
           }
        console.log(result);
        return result;
-       
-       }  
-       function enhancelyricsprocessing(te,i) {
-           const regex = /<(\d+):(\d+)\.(\d+)>([^<]*)<(\d+):(\d+)\.(\d+)>/g;
-           const result = [];
-           let ttt;
-           while ((ttt = regex.exec(te)) !== null) {
-           	const totalSecondsStart = parseInt(ttt[1]) * 60 + parseInt(ttt[2]) + parseInt(ttt[3]) / 100;
-           	const totalSecondsEnd = parseInt(ttt[5]) * 60 + parseInt(ttt[6]) + parseInt(ttt[7]) / 100;//大部分为到百分位，有一些到千分位
-           	const Duration = totalSecondsEnd - totalSecondsStart;
-               result.push({ ordinal: i, Duration: Duration, text: ttt[4] });
-           }
-           return result;
        }
     </script>
 </body>
