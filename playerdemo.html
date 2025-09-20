@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+parent {
+position: relative;
+}
+child1, .child2 {
+position: absolute;
+top: 0;
+left: 0;
+}
+</style>
+<meta charset="utf-8">
+<title>demo</title>
+</head>
+<body>
+    <h1>测试2</h1>
+    <div class="jumbotron">
+      <div class="parent">
+        <h1 class="child1" type="text" id="lyric"></h1>
+        <h1 class="child2" type="text" id="lyrict"></h1>
+      </div>
+      <p type="text" id="pairlyric"></p>
+      <br />
+      <audio id="audio" src="Fra-Lippo-Lippi-Shouldnt-Have-To-Be-Like-That.mp3" controls style="width:100%"></audio>
+    </div>
+    <script>
+       fetch('./fdhhdh.json')
+        .then(response => response.json())
+        .then(jsonlyrics => {
+        console.log(jsonlyrics);
+         audio.ontimeupdate=function(e) {
+         for(i1=0;i1<jsonlyrics.lyrics.length;i1++) {
+         	  if (audio.currentTime > jsonlyrics.lyrics[i1].time) {
+       	 	  lyric.innerHTML=jsonlyrics.lyrics[i1].text;
+       		  pairlyric.innerHTML=jsonlyrics.lyrics[i1].pairlyric;
+       	  }
+            }
+         }
+        })
+        .catch(error => {
+        console.error('加载失败:', error);
+        jsonlyrics;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1497 @@
+{
+    "metadata": {},
+    "lyrics": [
+        {
+            "ordinal": 4,
+            "time": "0.00",
+            "text": "Shouldn't Have to Be Like That - Fra Lippo Lippi",
+            "eln": 19,
+            "etext": [
+                {
+                    "ordinal": 4,
+                    "Duration": "0.86",
+                    "text": "Shouldn't"
+                },
+                {
+                    "ordinal": 4,
+                    "Duration": "0.86",
+                    "text": " "
+                },
+                {
+                    "ordinal": 4,
+                    "Duration": "0.87",
+                    "text": "Have"
+                },
+                {
+                    "ordinal": 4,
+                    "Duration": "0.86",
+                    "text": " "
+                },
+                {
+                    "ordinal": 4,
+                    "Duration": "0.87",
+                    "text": "to"
+                },
+                {
+                    "ordinal": 4,
+                    "Duration": "0.86",
+                    "text": " "
+                },
+                {
+                    "ordinal": 4,
+                    "Duration": "0.86",
+                    "text": "Be"
+                },
+                {
+                    "ordinal": 4,
+                    "Duration": "0.87",
+                    "text": " "
+                },
+                {
+                    "ordinal": 4,
+                    "Duration": "0.86",
+                    "text": "Like"
+                },
+                {
+                    "ordinal": 4,
+                    "Duration": "0.87",
+                    "text": " "
+                },
+                {
+                    "ordinal": 4,
+                    "Duration": "0.86",
+                    "text": "That"
+                },
+                {
+                    "ordinal": 4,
+                    "Duration": "0.86",
+                    "text": " "
+                },
+                {
+                    "ordinal": 4,
+                    "Duration": "0.87",
+                    "text": "-"
+                },
+                {
+                    "ordinal": 4,
+                    "Duration": "0.86",
+                    "text": " "
+                },
+                {
+                    "ordinal": 4,
+                    "Duration": "0.87",
+                    "text": "Fra"
+                },
+                {
+                    "ordinal": 4,
+                    "Duration": "0.86",
+                    "text": " "
+                },
+                {
+                    "ordinal": 4,
+                    "Duration": "0.86",
+                    "text": "Lippo"
+                },
+                {
+                    "ordinal": 4,
+                    "Duration": "0.87",
+                    "text": " "
+                },
+                {
+                    "ordinal": 4,
+                    "Duration": "0.86",
+                    "text": "Lippi"
+                }
+            ],
+            "pairlyric": "以下歌词翻译由文曲大模型提供"
+        },
+        {
+            "ordinal": 5,
+            "time": "16.42",
+            "text": "Composed by：Fra Lippo Lippi",
+            "eln": 9,
+            "etext": [
+                {
+                    "ordinal": 5,
+                    "Duration": "1.83",
+                    "text": "Composed"
+                },
+                {
+                    "ordinal": 5,
+                    "Duration": "1.83",
+                    "text": " "
+                },
+                {
+                    "ordinal": 5,
+                    "Duration": "1.82",
+                    "text": "by"
+                },
+                {
+                    "ordinal": 5,
+                    "Duration": "1.83",
+                    "text": "："
+                },
+                {
+                    "ordinal": 5,
+                    "Duration": "1.82",
+                    "text": "Fra"
+                },
+                {
+                    "ordinal": 5,
+                    "Duration": "1.83",
+                    "text": " "
+                },
+                {
+                    "ordinal": 5,
+                    "Duration": "1.83",
+                    "text": "Lippo"
+                },
+                {
+                    "ordinal": 5,
+                    "Duration": "1.82",
+                    "text": " "
+                },
+                {
+                    "ordinal": 5,
+                    "Duration": "1.83",
+                    "text": "Lippi"
+                }
+            ],
+            "pairlyric": "　　"
+        },
+        {
+            "ordinal": 6,
+            "time": "32.87",
+            "text": "It's always like this people I know",
+            "eln": 7,
+            "etext": [
+                {
+                    "ordinal": 6,
+                    "Duration": "0.17",
+                    "text": "It's "
+                },
+                {
+                    "ordinal": 6,
+                    "Duration": "0.23",
+                    "text": "always "
+                },
+                {
+                    "ordinal": 6,
+                    "Duration": "0.44",
+                    "text": "like "
+                },
+                {
+                    "ordinal": 6,
+                    "Duration": "0.44",
+                    "text": "this "
+                },
+                {
+                    "ordinal": 6,
+                    "Duration": "1.21",
+                    "text": "people "
+                },
+                {
+                    "ordinal": 6,
+                    "Duration": "0.24",
+                    "text": "I "
+                },
+                {
+                    "ordinal": 6,
+                    "Duration": "0.79",
+                    "text": "know"
+                }
+            ],
+            "pairlyric": "总是这样，我认识的人们"
+        },
+        {
+            "ordinal": 7,
+            "time": "36.96",
+            "text": "Read many books and save every dream",
+            "eln": 7,
+            "etext": [
+                {
+                    "ordinal": 7,
+                    "Duration": "0.34",
+                    "text": "Read "
+                },
+                {
+                    "ordinal": 7,
+                    "Duration": "0.37",
+                    "text": "many "
+                },
+                {
+                    "ordinal": 7,
+                    "Duration": "0.54",
+                    "text": "books "
+                },
+                {
+                    "ordinal": 7,
+                    "Duration": "0.50",
+                    "text": "and "
+                },
+                {
+                    "ordinal": 7,
+                    "Duration": "0.35",
+                    "text": "save "
+                },
+                {
+                    "ordinal": 7,
+                    "Duration": "0.74",
+                    "text": "every "
+                },
+                {
+                    "ordinal": 7,
+                    "Duration": "1.09",
+                    "text": "dream"
+                }
+            ],
+            "pairlyric": "读了许多书，珍藏每一个梦想"
+        },
+        {
+            "ordinal": 8,
+            "time": "41.88",
+            "text": "With all of their hope buried inside somewhere",
+            "eln": 8,
+            "etext": [
+                {
+                    "ordinal": 8,
+                    "Duration": "0.23",
+                    "text": "With "
+                },
+                {
+                    "ordinal": 8,
+                    "Duration": "0.29",
+                    "text": "all "
+                },
+                {
+                    "ordinal": 8,
+                    "Duration": "0.29",
+                    "text": "of "
+                },
+                {
+                    "ordinal": 8,
+                    "Duration": "0.60",
+                    "text": "their "
+                },
+                {
+                    "ordinal": 8,
+                    "Duration": "0.42",
+                    "text": "hope "
+                },
+                {
+                    "ordinal": 8,
+                    "Duration": "1.08",
+                    "text": "buried "
+                },
+                {
+                    "ordinal": 8,
+                    "Duration": "1.41",
+                    "text": "inside "
+                },
+                {
+                    "ordinal": 8,
+                    "Duration": "2.20",
+                    "text": "somewhere"
+                }
+            ],
+            "pairlyric": "将所有的希望深埋心底"
+        },
+        {
+            "ordinal": 9,
+            "time": "49.03",
+            "text": "And somewhere a man cries for his love",
+            "eln": 8,
+            "etext": [
+                {
+                    "ordinal": 9,
+                    "Duration": "0.21",
+                    "text": "And "
+                },
+                {
+                    "ordinal": 9,
+                    "Duration": "0.56",
+                    "text": "somewhere "
+                },
+                {
+                    "ordinal": 9,
+                    "Duration": "0.39",
+                    "text": "a "
+                },
+                {
+                    "ordinal": 9,
+                    "Duration": "0.95",
+                    "text": "man "
+                },
+                {
+                    "ordinal": 9,
+                    "Duration": "0.61",
+                    "text": "cries "
+                },
+                {
+                    "ordinal": 9,
+                    "Duration": "0.26",
+                    "text": "for "
+                },
+                {
+                    "ordinal": 9,
+                    "Duration": "0.35",
+                    "text": "his "
+                },
+                {
+                    "ordinal": 9,
+                    "Duration": "0.64",
+                    "text": "love"
+                }
+            ],
+            "pairlyric": "某处有个男人为他的爱哭泣"
+        },
+        {
+            "ordinal": 10,
+            "time": "53.27",
+            "text": "A love that is lost that withered too soon",
+            "eln": 9,
+            "etext": [
+                {
+                    "ordinal": 10,
+                    "Duration": "0.23",
+                    "text": "A "
+                },
+                {
+                    "ordinal": 10,
+                    "Duration": "0.28",
+                    "text": "love "
+                },
+                {
+                    "ordinal": 10,
+                    "Duration": "0.26",
+                    "text": "that "
+                },
+                {
+                    "ordinal": 10,
+                    "Duration": "0.23",
+                    "text": "is "
+                },
+                {
+                    "ordinal": 10,
+                    "Duration": "0.57",
+                    "text": "lost "
+                },
+                {
+                    "ordinal": 10,
+                    "Duration": "0.41",
+                    "text": "that "
+                },
+                {
+                    "ordinal": 10,
+                    "Duration": "0.80",
+                    "text": "withered "
+                },
+                {
+                    "ordinal": 10,
+                    "Duration": "0.19",
+                    "text": "too "
+                },
+                {
+                    "ordinal": 10,
+                    "Duration": "1.14",
+                    "text": "soon"
+                }
+            ],
+            "pairlyric": "一份过早凋零的爱情"
+        },
+        {
+            "ordinal": 11,
+            "time": "58.42",
+            "text": "With all of his hope buried inside somewhere",
+            "eln": 8,
+            "etext": [
+                {
+                    "ordinal": 11,
+                    "Duration": "0.21",
+                    "text": "With "
+                },
+                {
+                    "ordinal": 11,
+                    "Duration": "0.58",
+                    "text": "all "
+                },
+                {
+                    "ordinal": 11,
+                    "Duration": "0.27",
+                    "text": "of "
+                },
+                {
+                    "ordinal": 11,
+                    "Duration": "0.23",
+                    "text": "his "
+                },
+                {
+                    "ordinal": 11,
+                    "Duration": "0.42",
+                    "text": "hope "
+                },
+                {
+                    "ordinal": 11,
+                    "Duration": "1.01",
+                    "text": "buried "
+                },
+                {
+                    "ordinal": 11,
+                    "Duration": "1.65",
+                    "text": "inside "
+                },
+                {
+                    "ordinal": 11,
+                    "Duration": "3.55",
+                    "text": "somewhere"
+                }
+            ],
+            "pairlyric": "将所有的希望深埋心底"
+        },
+        {
+            "ordinal": 12,
+            "time": "66.94",
+            "text": "Shouldn't have to be like that",
+            "eln": 6,
+            "etext": [
+                {
+                    "ordinal": 12,
+                    "Duration": "0.42",
+                    "text": "Shouldn't "
+                },
+                {
+                    "ordinal": 12,
+                    "Duration": "0.31",
+                    "text": "have "
+                },
+                {
+                    "ordinal": 12,
+                    "Duration": "0.22",
+                    "text": "to "
+                },
+                {
+                    "ordinal": 12,
+                    "Duration": "0.36",
+                    "text": "be "
+                },
+                {
+                    "ordinal": 12,
+                    "Duration": "0.44",
+                    "text": "like "
+                },
+                {
+                    "ordinal": 12,
+                    "Duration": "0.42",
+                    "text": "that"
+                }
+            ],
+            "pairlyric": "不应该是这样的"
+        },
+        {
+            "ordinal": 13,
+            "time": "70.82",
+            "text": "Shouldn't have to be like that",
+            "eln": 6,
+            "etext": [
+                {
+                    "ordinal": 13,
+                    "Duration": "0.49",
+                    "text": "Shouldn't "
+                },
+                {
+                    "ordinal": 13,
+                    "Duration": "0.24",
+                    "text": "have "
+                },
+                {
+                    "ordinal": 13,
+                    "Duration": "0.24",
+                    "text": "to "
+                },
+                {
+                    "ordinal": 13,
+                    "Duration": "0.44",
+                    "text": "be "
+                },
+                {
+                    "ordinal": 13,
+                    "Duration": "0.38",
+                    "text": "like "
+                },
+                {
+                    "ordinal": 13,
+                    "Duration": "0.40",
+                    "text": "that"
+                }
+            ],
+            "pairlyric": "不应该是这样的"
+        },
+        {
+            "ordinal": 14,
+            "time": "75.04",
+            "text": "Shouldn't have to be like that",
+            "eln": 6,
+            "etext": [
+                {
+                    "ordinal": 14,
+                    "Duration": "0.44",
+                    "text": "Shouldn't "
+                },
+                {
+                    "ordinal": 14,
+                    "Duration": "0.22",
+                    "text": "have "
+                },
+                {
+                    "ordinal": 14,
+                    "Duration": "0.25",
+                    "text": "to "
+                },
+                {
+                    "ordinal": 14,
+                    "Duration": "0.48",
+                    "text": "be "
+                },
+                {
+                    "ordinal": 14,
+                    "Duration": "0.32",
+                    "text": "like "
+                },
+                {
+                    "ordinal": 14,
+                    "Duration": "0.51",
+                    "text": "that"
+                }
+            ],
+            "pairlyric": "不应该是这样的"
+        },
+        {
+            "ordinal": 15,
+            "time": "79.06",
+            "text": "Shouldn't have to be like that",
+            "eln": 6,
+            "etext": [
+                {
+                    "ordinal": 15,
+                    "Duration": "0.56",
+                    "text": "Shouldn't "
+                },
+                {
+                    "ordinal": 15,
+                    "Duration": "0.21",
+                    "text": "have "
+                },
+                {
+                    "ordinal": 15,
+                    "Duration": "0.21",
+                    "text": "to "
+                },
+                {
+                    "ordinal": 15,
+                    "Duration": "0.49",
+                    "text": "be "
+                },
+                {
+                    "ordinal": 15,
+                    "Duration": "0.38",
+                    "text": "like "
+                },
+                {
+                    "ordinal": 15,
+                    "Duration": "0.48",
+                    "text": "that"
+                }
+            ],
+            "pairlyric": "不应该是这样的"
+        },
+        {
+            "ordinal": 16,
+            "time": "115.44",
+            "text": "So all you can say is we need more time",
+            "eln": 10,
+            "etext": [
+                {
+                    "ordinal": 16,
+                    "Duration": "0.23",
+                    "text": "So "
+                },
+                {
+                    "ordinal": 16,
+                    "Duration": "0.20",
+                    "text": "all "
+                },
+                {
+                    "ordinal": 16,
+                    "Duration": "0.19",
+                    "text": "you "
+                },
+                {
+                    "ordinal": 16,
+                    "Duration": "0.44",
+                    "text": "can "
+                },
+                {
+                    "ordinal": 16,
+                    "Duration": "0.51",
+                    "text": "say "
+                },
+                {
+                    "ordinal": 16,
+                    "Duration": "0.59",
+                    "text": "is "
+                },
+                {
+                    "ordinal": 16,
+                    "Duration": "0.31",
+                    "text": "we "
+                },
+                {
+                    "ordinal": 16,
+                    "Duration": "0.29",
+                    "text": "need "
+                },
+                {
+                    "ordinal": 16,
+                    "Duration": "0.26",
+                    "text": "more "
+                },
+                {
+                    "ordinal": 16,
+                    "Duration": "0.72",
+                    "text": "time"
+                }
+            ],
+            "pairlyric": "所以你只能说我们需要更多时间"
+        },
+        {
+            "ordinal": 17,
+            "time": "119.51",
+            "text": "To get through the things that need to be said",
+            "eln": 10,
+            "etext": [
+                {
+                    "ordinal": 17,
+                    "Duration": "0.20",
+                    "text": "To "
+                },
+                {
+                    "ordinal": 17,
+                    "Duration": "0.32",
+                    "text": "get "
+                },
+                {
+                    "ordinal": 17,
+                    "Duration": "0.38",
+                    "text": "through "
+                },
+                {
+                    "ordinal": 17,
+                    "Duration": "0.20",
+                    "text": "the "
+                },
+                {
+                    "ordinal": 17,
+                    "Duration": "0.49",
+                    "text": "things "
+                },
+                {
+                    "ordinal": 17,
+                    "Duration": "0.45",
+                    "text": "that "
+                },
+                {
+                    "ordinal": 17,
+                    "Duration": "0.41",
+                    "text": "need "
+                },
+                {
+                    "ordinal": 17,
+                    "Duration": "0.25",
+                    "text": "to "
+                },
+                {
+                    "ordinal": 17,
+                    "Duration": "0.30",
+                    "text": "be "
+                },
+                {
+                    "ordinal": 17,
+                    "Duration": "1.12",
+                    "text": "said"
+                }
+            ],
+            "pairlyric": "去解决那些需要说出口的事情"
+        },
+        {
+            "ordinal": 18,
+            "time": "124.67",
+            "text": "With all our trust buried inside somewhere",
+            "eln": 7,
+            "etext": [
+                {
+                    "ordinal": 18,
+                    "Duration": "0.22",
+                    "text": "With "
+                },
+                {
+                    "ordinal": 18,
+                    "Duration": "0.59",
+                    "text": "all "
+                },
+                {
+                    "ordinal": 18,
+                    "Duration": "0.31",
+                    "text": "our "
+                },
+                {
+                    "ordinal": 18,
+                    "Duration": "0.44",
+                    "text": "trust "
+                },
+                {
+                    "ordinal": 18,
+                    "Duration": "1.21",
+                    "text": "buried "
+                },
+                {
+                    "ordinal": 18,
+                    "Duration": "2.05",
+                    "text": "inside "
+                },
+                {
+                    "ordinal": 18,
+                    "Duration": "2.10",
+                    "text": "somewhere"
+                }
+            ],
+            "pairlyric": "我们所有的信任都被深埋在某处"
+        },
+        {
+            "ordinal": 19,
+            "time": "132.05",
+            "text": "And even if it takes a lifetime of trust",
+            "eln": 9,
+            "etext": [
+                {
+                    "ordinal": 19,
+                    "Duration": "0.22",
+                    "text": "And "
+                },
+                {
+                    "ordinal": 19,
+                    "Duration": "0.35",
+                    "text": "even "
+                },
+                {
+                    "ordinal": 19,
+                    "Duration": "0.16",
+                    "text": "if "
+                },
+                {
+                    "ordinal": 19,
+                    "Duration": "0.24",
+                    "text": "it "
+                },
+                {
+                    "ordinal": 19,
+                    "Duration": "0.48",
+                    "text": "takes "
+                },
+                {
+                    "ordinal": 19,
+                    "Duration": "0.48",
+                    "text": "a "
+                },
+                {
+                    "ordinal": 19,
+                    "Duration": "0.66",
+                    "text": "lifetime "
+                },
+                {
+                    "ordinal": 19,
+                    "Duration": "0.46",
+                    "text": "of "
+                },
+                {
+                    "ordinal": 19,
+                    "Duration": "0.45",
+                    "text": "trust"
+                }
+            ],
+            "pairlyric": "即使需要一生的信任"
+        },
+        {
+            "ordinal": 20,
+            "time": "135.96",
+            "text": "To build something strong what happens to us",
+            "eln": 8,
+            "etext": [
+                {
+                    "ordinal": 20,
+                    "Duration": "0.22",
+                    "text": "To "
+                },
+                {
+                    "ordinal": 20,
+                    "Duration": "0.42",
+                    "text": "build "
+                },
+                {
+                    "ordinal": 20,
+                    "Duration": "0.45",
+                    "text": "something "
+                },
+                {
+                    "ordinal": 20,
+                    "Duration": "0.60",
+                    "text": "strong "
+                },
+                {
+                    "ordinal": 20,
+                    "Duration": "0.54",
+                    "text": "what "
+                },
+                {
+                    "ordinal": 20,
+                    "Duration": "0.64",
+                    "text": "happens "
+                },
+                {
+                    "ordinal": 20,
+                    "Duration": "0.31",
+                    "text": "to "
+                },
+                {
+                    "ordinal": 20,
+                    "Duration": "0.90",
+                    "text": "us"
+                }
+            ],
+            "pairlyric": "去建立坚固的感情 我们又会怎样"
+        },
+        {
+            "ordinal": 21,
+            "time": "141.17",
+            "text": "With all our faith buried inside somewhere",
+            "eln": 7,
+            "etext": [
+                {
+                    "ordinal": 21,
+                    "Duration": "0.23",
+                    "text": "With "
+                },
+                {
+                    "ordinal": 21,
+                    "Duration": "0.63",
+                    "text": "all "
+                },
+                {
+                    "ordinal": 21,
+                    "Duration": "0.28",
+                    "text": "our "
+                },
+                {
+                    "ordinal": 21,
+                    "Duration": "0.59",
+                    "text": "faith "
+                },
+                {
+                    "ordinal": 21,
+                    "Duration": "1.13",
+                    "text": "buried "
+                },
+                {
+                    "ordinal": 21,
+                    "Duration": "1.72",
+                    "text": "inside "
+                },
+                {
+                    "ordinal": 21,
+                    "Duration": "3.62",
+                    "text": "somewhere"
+                }
+            ],
+            "pairlyric": "我们所有的信念深埋在某处"
+        },
+        {
+            "ordinal": 22,
+            "time": "149.67",
+            "text": "Shouldn't have to be like that",
+            "eln": 6,
+            "etext": [
+                {
+                    "ordinal": 22,
+                    "Duration": "0.44",
+                    "text": "Shouldn't "
+                },
+                {
+                    "ordinal": 22,
+                    "Duration": "0.23",
+                    "text": "have "
+                },
+                {
+                    "ordinal": 22,
+                    "Duration": "0.24",
+                    "text": "to "
+                },
+                {
+                    "ordinal": 22,
+                    "Duration": "0.32",
+                    "text": "be "
+                },
+                {
+                    "ordinal": 22,
+                    "Duration": "0.55",
+                    "text": "like "
+                },
+                {
+                    "ordinal": 22,
+                    "Duration": "0.38",
+                    "text": "that"
+                }
+            ],
+            "pairlyric": "不应该是这样的"
+        },
+        {
+            "ordinal": 23,
+            "time": "153.59",
+            "text": "Shouldn't have to be like that",
+            "eln": 6,
+            "etext": [
+                {
+                    "ordinal": 23,
+                    "Duration": "0.49",
+                    "text": "Shouldn't "
+                },
+                {
+                    "ordinal": 23,
+                    "Duration": "0.23",
+                    "text": "have "
+                },
+                {
+                    "ordinal": 23,
+                    "Duration": "0.23",
+                    "text": "to "
+                },
+                {
+                    "ordinal": 23,
+                    "Duration": "0.49",
+                    "text": "be "
+                },
+                {
+                    "ordinal": 23,
+                    "Duration": "0.43",
+                    "text": "like "
+                },
+                {
+                    "ordinal": 23,
+                    "Duration": "0.47",
+                    "text": "that"
+                }
+            ],
+            "pairlyric": "不应该是这样的"
+        },
+        {
+            "ordinal": 24,
+            "time": "157.73",
+            "text": "Shouldn't have to be like that",
+            "eln": 6,
+            "etext": [
+                {
+                    "ordinal": 24,
+                    "Duration": "0.52",
+                    "text": "Shouldn't "
+                },
+                {
+                    "ordinal": 24,
+                    "Duration": "0.27",
+                    "text": "have "
+                },
+                {
+                    "ordinal": 24,
+                    "Duration": "0.19",
+                    "text": "to "
+                },
+                {
+                    "ordinal": 24,
+                    "Duration": "0.47",
+                    "text": "be "
+                },
+                {
+                    "ordinal": 24,
+                    "Duration": "0.37",
+                    "text": "like "
+                },
+                {
+                    "ordinal": 24,
+                    "Duration": "0.47",
+                    "text": "that"
+                }
+            ],
+            "pairlyric": "不应该是这样的"
+        },
+        {
+            "ordinal": 25,
+            "time": "161.86",
+            "text": "Shouldn't have to be like that",
+            "eln": 6,
+            "etext": [
+                {
+                    "ordinal": 25,
+                    "Duration": "0.51",
+                    "text": "Shouldn't "
+                },
+                {
+                    "ordinal": 25,
+                    "Duration": "0.22",
+                    "text": "have "
+                },
+                {
+                    "ordinal": 25,
+                    "Duration": "0.25",
+                    "text": "to "
+                },
+                {
+                    "ordinal": 25,
+                    "Duration": "0.47",
+                    "text": "be "
+                },
+                {
+                    "ordinal": 25,
+                    "Duration": "0.41",
+                    "text": "like "
+                },
+                {
+                    "ordinal": 25,
+                    "Duration": "0.43",
+                    "text": "that"
+                }
+            ],
+            "pairlyric": "不应该是这样的"
+        },
+        {
+            "ordinal": 26,
+            "time": "182.78",
+            "text": "Shouldn't have to do like that",
+            "eln": 6,
+            "etext": [
+                {
+                    "ordinal": 26,
+                    "Duration": "0.37",
+                    "text": "Shouldn't "
+                },
+                {
+                    "ordinal": 26,
+                    "Duration": "0.21",
+                    "text": "have "
+                },
+                {
+                    "ordinal": 26,
+                    "Duration": "0.21",
+                    "text": "to "
+                },
+                {
+                    "ordinal": 26,
+                    "Duration": "0.48",
+                    "text": "do "
+                },
+                {
+                    "ordinal": 26,
+                    "Duration": "0.41",
+                    "text": "like "
+                },
+                {
+                    "ordinal": 26,
+                    "Duration": "0.39",
+                    "text": "that"
+                }
+            ],
+            "pairlyric": "不应该这样做"
+        },
+        {
+            "ordinal": 27,
+            "time": "186.78",
+            "text": "Shouldn't have to be like that",
+            "eln": 6,
+            "etext": [
+                {
+                    "ordinal": 27,
+                    "Duration": "0.40",
+                    "text": "Shouldn't "
+                },
+                {
+                    "ordinal": 27,
+                    "Duration": "0.25",
+                    "text": "have "
+                },
+                {
+                    "ordinal": 27,
+                    "Duration": "0.23",
+                    "text": "to "
+                },
+                {
+                    "ordinal": 27,
+                    "Duration": "0.47",
+                    "text": "be "
+                },
+                {
+                    "ordinal": 27,
+                    "Duration": "0.35",
+                    "text": "like "
+                },
+                {
+                    "ordinal": 27,
+                    "Duration": "0.53",
+                    "text": "that"
+                }
+            ],
+            "pairlyric": "不应该是这样的"
+        },
+        {
+            "ordinal": 28,
+            "time": "190.82",
+            "text": "Shouldn't have to be like that",
+            "eln": 6,
+            "etext": [
+                {
+                    "ordinal": 28,
+                    "Duration": "0.42",
+                    "text": "Shouldn't "
+                },
+                {
+                    "ordinal": 28,
+                    "Duration": "0.26",
+                    "text": "have "
+                },
+                {
+                    "ordinal": 28,
+                    "Duration": "0.27",
+                    "text": "to "
+                },
+                {
+                    "ordinal": 28,
+                    "Duration": "0.42",
+                    "text": "be "
+                },
+                {
+                    "ordinal": 28,
+                    "Duration": "0.40",
+                    "text": "like "
+                },
+                {
+                    "ordinal": 28,
+                    "Duration": "0.42",
+                    "text": "that"
+                }
+            ],
+            "pairlyric": "不应该是这样的"
+        },
+        {
+            "ordinal": 29,
+            "time": "194.94",
+            "text": "Shouldn't have to be like that",
+            "eln": 6,
+            "etext": [
+                {
+                    "ordinal": 29,
+                    "Duration": "0.47",
+                    "text": "Shouldn't "
+                },
+                {
+                    "ordinal": 29,
+                    "Duration": "0.22",
+                    "text": "have "
+                },
+                {
+                    "ordinal": 29,
+                    "Duration": "0.32",
+                    "text": "to "
+                },
+                {
+                    "ordinal": 29,
+                    "Duration": "0.48",
+                    "text": "be "
+                },
+                {
+                    "ordinal": 29,
+                    "Duration": "0.36",
+                    "text": "like "
+                },
+                {
+                    "ordinal": 29,
+                    "Duration": "0.40",
+                    "text": "that"
+                }
+            ],
+            "pairlyric": "不应该是这样的"
+        },
+        {
+            "ordinal": 30,
+            "time": "198.98",
+            "text": "No it shouldn't have to be like that",
+            "eln": 8,
+            "etext": [
+                {
+                    "ordinal": 30,
+                    "Duration": "0.20",
+                    "text": "No "
+                },
+                {
+                    "ordinal": 30,
+                    "Duration": "0.18",
+                    "text": "it "
+                },
+                {
+                    "ordinal": 30,
+                    "Duration": "0.31",
+                    "text": "shouldn't "
+                },
+                {
+                    "ordinal": 30,
+                    "Duration": "0.24",
+                    "text": "have "
+                },
+                {
+                    "ordinal": 30,
+                    "Duration": "0.21",
+                    "text": "to "
+                },
+                {
+                    "ordinal": 30,
+                    "Duration": "0.48",
+                    "text": "be "
+                },
+                {
+                    "ordinal": 30,
+                    "Duration": "0.38",
+                    "text": "like "
+                },
+                {
+                    "ordinal": 30,
+                    "Duration": "0.40",
+                    "text": "that"
+                }
+            ],
+            "pairlyric": "不，本不该如此"
+        },
+        {
+            "ordinal": 31,
+            "time": "203.28",
+            "text": "Shouldn't have to be like that",
+            "eln": 6,
+            "etext": [
+                {
+                    "ordinal": 31,
+                    "Duration": "0.37",
+                    "text": "Shouldn't "
+                },
+                {
+                    "ordinal": 31,
+                    "Duration": "0.21",
+                    "text": "have "
+                },
+                {
+                    "ordinal": 31,
+                    "Duration": "0.27",
+                    "text": "to "
+                },
+                {
+                    "ordinal": 31,
+                    "Duration": "0.49",
+                    "text": "be "
+                },
+                {
+                    "ordinal": 31,
+                    "Duration": "0.42",
+                    "text": "like "
+                },
+                {
+                    "ordinal": 31,
+                    "Duration": "0.47",
+                    "text": "that"
+                }
+            ],
+            "pairlyric": "不应该是这样的"
+        },
+        {
+            "ordinal": 32,
+            "time": "207.44",
+            "text": "Shouldn't have to be like that",
+            "eln": 6,
+            "etext": [
+                {
+                    "ordinal": 32,
+                    "Duration": "0.49",
+                    "text": "Shouldn't "
+                },
+                {
+                    "ordinal": 32,
+                    "Duration": "0.29",
+                    "text": "have "
+                },
+                {
+                    "ordinal": 32,
+                    "Duration": "0.21",
+                    "text": "to "
+                },
+                {
+                    "ordinal": 32,
+                    "Duration": "0.41",
+                    "text": "be "
+                },
+                {
+                    "ordinal": 32,
+                    "Duration": "0.41",
+                    "text": "like "
+                },
+                {
+                    "ordinal": 32,
+                    "Duration": "0.46",
+                    "text": "that"
+                }
+            ],
+            "pairlyric": "不应该是这样的"
+        },
+        {
+            "ordinal": 33,
+            "time": "211.53",
+            "text": "Shouldn't have to be like that",
+            "eln": 6,
+            "etext": [
+                {
+                    "ordinal": 33,
+                    "Duration": "0.50",
+                    "text": "Shouldn't "
+                },
+                {
+                    "ordinal": 33,
+                    "Duration": "0.27",
+                    "text": "have "
+                },
+                {
+                    "ordinal": 33,
+                    "Duration": "0.26",
+                    "text": "to "
+                },
+                {
+                    "ordinal": 33,
+                    "Duration": "0.41",
+                    "text": "be "
+                },
+                {
+                    "ordinal": 33,
+                    "Duration": "0.38",
+                    "text": "like "
+                },
+                {
+                    "ordinal": 33,
+                    "Duration": "0.54",
+                    "text": "that"
+                }
+            ],
+            "pairlyric": "不应该是这样的"
+        },
+        {
+            "ordinal": 34,
+            "time": "214.14",
+            "text": "No no no",
+            "eln": 3,
+            "etext": [
+                {
+                    "ordinal": 34,
+                    "Duration": "0.50",
+                    "text": "No "
+                },
+                {
+                    "ordinal": 34,
+                    "Duration": "0.51",
+                    "text": "no "
+                },
+                {
+                    "ordinal": 34,
+                    "Duration": "0.53",
+                    "text": "no"
+                }
+            ],
+            "pairlyric": "不，不，不"
+        },
+        {
+            "ordinal": 35,
+            "time": "215.91",
+            "text": "Shouldn't have to be like that",
+            "eln": 6,
+            "etext": [
+                {
+                    "ordinal": 35,
+                    "Duration": "0.26",
+                    "text": "Shouldn't "
+                },
+                {
+                    "ordinal": 35,
+                    "Duration": "0.23",
+                    "text": "have "
+                },
+                {
+                    "ordinal": 35,
+                    "Duration": "0.32",
+                    "text": "to "
+                },
+                {
+                    "ordinal": 35,
+                    "Duration": "0.44",
+                    "text": "be "
+                },
+                {
+                    "ordinal": 35,
+                    "Duration": "0.43",
+                    "text": "like "
+                },
+                {
+                    "ordinal": 35,
+                    "Duration": "0.54",
+                    "text": "that"
+                }
+            ],
+            "pairlyric": "不应该是这样的"
+        },
+        {
+            "ordinal": 36,
+            "time": "219.96",
+            "text": "Shouldn't have to be like that",
+            "eln": 6,
+            "etext": [
+                {
+                    "ordinal": 36,
+                    "Duration": "0.36",
+                    "text": "Shouldn't "
+                },
+                {
+                    "ordinal": 36,
+                    "Duration": "0.27",
+                    "text": "have "
+                },
+                {
+                    "ordinal": 36,
+                    "Duration": "0.24",
+                    "text": "to "
+                },
+                {
+                    "ordinal": 36,
+                    "Duration": "0.45",
+                    "text": "be "
+                },
+                {
+                    "ordinal": 36,
+                    "Duration": "0.40",
+                    "text": "like "
+                },
+                {
+                    "ordinal": 36,
+                    "Duration": "0.39",
+                    "text": "that"
+                }
+            ],
+            "pairlyric": "不应该是这样的"
+        }
+    ]
+}
