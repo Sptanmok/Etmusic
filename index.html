@@ -95,7 +95,7 @@
             	     const totalSecondsEnd = parseInt(ttt[1]) * 60 + parseInt(ttt[2]) + parseInt(ttt[3]) / 100;//大部分为到百分位，有一些到千分位
            	     const Duration = totalSecondsEnd - totalSecondsStart;
            	     const tttd = text.substring(tttc.index + tttc[0].length, ttt.index);
-                    eljson.push({ ordinal: i, Duration: Duration.toFixed(2), text: tttd });
+                    eljson.push({ ordinal: i, Duration: Duration.toFixed(2), start: totalSecondsStart, end: totalSecondsEnd, text: tttd });
                   }
                   tttc = ttt;
                 }
