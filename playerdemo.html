@@ -78,7 +78,7 @@ function displayCurrentLyric() {
     let html = '';
     
     for (let i = 0; i < currentLyric.etext.length; i++) {
-        html += `<span style="--progress:0%">${currentLyric.etext[i].text}</p>`;
+        html += `<span style="--progress:0%">${currentLyric.etext[i].text}</span>`;
     }
         lyricElement.innerHTML = html;
     wordElements = lyricElement.getElementsByTagName('span');
