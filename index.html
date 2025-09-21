@@ -59,7 +59,7 @@
           console.log("2");
           //定义正则表达式
           let i = 0;
-          for (const line of lines) {
+          for (line of lines) {
                if (!line.trim()) continue;
                line = line.replace(/ /g, '&nbsp;');
                const metadataMatch = line.match(metadataRegex);
