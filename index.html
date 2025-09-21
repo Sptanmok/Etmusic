@@ -60,7 +60,8 @@
           //定义正则表达式
           let i = 0;
           for (const line of lines) {
-          	if (!line.trim()) continue;
+               if (!line.trim()) continue;
+               line = line.replace(/ /g, '&nbsp;');
                const metadataMatch = line.match(metadataRegex);
                if (metadataMatch) {
                    result.metadata[metadataMatch[1].toLowerCase()] = metadataMatch[2];
