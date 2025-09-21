@@ -55,7 +55,6 @@ function initLyrics() {//初始化
 function updateLyrics() {
     const currentTime = audio.currentTime;
                 
-    //查找当前时间对应的歌词行
     let newIndex = -1;
     for (let i = 0; i < jsonlyrics.lyrics.length; i++) {
         if (currentTime >= jsonlyrics.lyrics[i].time) {
@@ -65,13 +64,11 @@ function updateLyrics() {
        }
     }
                 
-    //如果切换到新的歌词行
     if (newIndex !== currentLyricIndex && newIndex !== -1) {
         currentLyricIndex = newIndex;
         displayCurrentLyric();
     }
                 
-    //更新当前行的单词高亮
     if (currentLyricIndex !== -1) {
         highlightWords(currentTime);
     }
@@ -81,10 +78,10 @@ function displayCurrentLyric() {
     let html = '';
     
     for (let i = 0; i < currentLyric.etext.length; i++) {
-        html += `<p style="--progress:0%">${currentLyric.etext[i].text}</p>`;
+        html += `<span style="--progress:0%">${currentLyric.etext[i].text}</p>`;
     }
         lyricElement.innerHTML = html;
-    wordElements = lyricElement.getElementsByTagName('p');
+    wordElements = lyricElement.getElementsByTagName('span');
     pairLyricElement.textContent = currentLyric.pairlyric;
 }
 function highlightWords(currentTime) {
