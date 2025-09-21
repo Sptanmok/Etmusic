@@ -49,10 +49,8 @@ fetch('./Перемотка-Солнце.json')
     console.log(jsonlyrics);
 	initLyrics();
   })
-function initLyrics() {//初始化
-    audio.addEventListener('timeupdate', function() {
-        updateLyrics(jsonlyrics);
-    });
+function initLyrics() {
+    setInterval(updateLyrics, 10);
 }
 function updateLyrics() {
     const currentTime = audio.currentTime;
