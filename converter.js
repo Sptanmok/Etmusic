@@ -1,22 +1,3 @@
-<!DOCTYPE html>
-<html>
-<head>
-<style>
-</style>
-<meta charset="utf-8">
-<title>demo</title>
-</head>
-<body>
-    <h1>测试1</h1>
-    <input type="file" id="lrcFile" accept=".lrc" class="file-input">
-    <button id="parseBtn">解析LRC文件</button>
-    <div class="jumbotron">
-        <h1 class="lead" type="text" id="lyric"></h1>
-        <p type="text" id="pairlyric"></p>
-        <br />
-        <audio id="audio" src="Fra-Lippo-Lippi-Shouldnt-Have-To-Be-Like-That.mp3" controls style="width:100%"></audio>
-    </div>
-    <script>
        lyric = document.getElementById('lyric');
        const lrcFileInput = document.getElementById('lrcFile');
        const parseBtn = document.getElementById('parseBtn');
@@ -37,7 +18,7 @@
            };
            reader.readAsText(file);
        });
-       audio.ontimeupdate=function(e) {
+       audio.ontimeupdate=function(e) {//遗留播放器字幕控制
        for(i1=0;i1<jsonlyrics.lyrics.length;i1++) {
        	if (audio.currentTime > jsonlyrics.lyrics[i1].time) {
        		lyric.innerHTML=jsonlyrics.lyrics[i1].text;
@@ -122,6 +103,3 @@
        console.log(result);
        return result;
        }
-    </script>
-</body>
-</html>
