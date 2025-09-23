@@ -56,9 +56,9 @@ function highlightWords(currentTime) {
     const currentLyric = jsonlyrics.lyrics[currentLyricIndex];
                 
     for (let i = 0; i < currentLyric.etext.length; i++) {
-        const word = currentLyric.etext[i];
+        const word = currentLyric.etext[i];//简化
         
-        if (currentTime >= word.start && currentTime <= word.end) {
+        if (currentTime >= word.start && currentTime <= word.end) { //判断时间
             const progress = ((currentTime - word.start) / word.Duration) * 100;
             if (wordElements[i]) {
                 wordElements[i].style.setProperty('--progress', `${progress}%`);

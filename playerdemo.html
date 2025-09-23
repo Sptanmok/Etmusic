@@ -2,9 +2,18 @@
 <html>
 <head>
 <style>
-.text{}
-.player{
-	margin: 0 auto;
+body{
+	background-image:url('./20250820072923875926.webp');
+}
+.main{
+	width: 100%;
+	max-width: 800px;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+	display: flex;
+    justify-content: center;
+    align-items: center;
 }
 .text span {
     display: inline-block;
@@ -15,15 +24,12 @@
     transition: --progress 0.1s ease;
 	white-space: normal;
 }
-.highlight {
-    color: #FFD700;
-}
 </style>
 <meta charset="utf-8">
 <title>demo</title>
 </head>
 <body>
-    <div class="player">
+    <div class="main">
       <div>
         <h1 class="text" type="lyric" id="lyric"></h1>
       </div>
