@@ -22,7 +22,11 @@ function initLyrics() {
     setInterval(updateLyrics, 10);//刷新
 }
 function updateLyrics() {
-	console.log(audio.paused);
+	if (audio.paused == true){
+		shake.style.animationPlayState = 'paused';
+	} else{
+		shake.style.animationPlayState = 'running';
+	}
     const currentTime = audio.currentTime;
                 
     let newIndex = -1;
