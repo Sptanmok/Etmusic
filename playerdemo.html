@@ -4,6 +4,12 @@
 <style>
 body{
 	background-image:url('./20250820072923875926.webp');
+	font-family: '微软雅黑', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
 }
 .main{
 	width: 100%;
@@ -11,9 +17,6 @@ body{
     border-radius: 15px;
     padding: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-	display: flex;
-    justify-content: center;
-    align-items: center;
 }
 .text span {
     display: inline-block;
@@ -24,6 +27,45 @@ body{
     transition: --progress 0.1s ease;
 	white-space: normal;
 }
+@keyframes shake {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  10% {
+    transform: translate(5px, -5px) rotate(3deg);
+  }
+  20% {
+    transform: translate(-10px, 8px) rotate(-3deg);
+  }
+  30% {
+    transform: translate(7px, 6px) rotate(2deg);
+  }
+  40% {
+    transform: translate(-3px, -4px) rotate(-5deg);
+  }
+  50% {
+    transform: translate(6px, -7px) rotate(4deg);
+  }
+  60% {
+    transform: translate(-8px, 5px) rotate(1deg);
+  }
+  70% {
+    transform: translate(4px, -3px) rotate(-2deg);
+  }
+  80% {
+    transform: translate(-6px, 4px) rotate(6deg);
+  }
+  90% {
+    transform: translate(2px, -2px) rotate(-4deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+.shake-text span {
+  display: inline-block;
+  animation: shake 5s ease-in-out infinite;
+}
 </style>
 <meta charset="utf-8">
 <title>demo</title>
@@ -31,7 +73,7 @@ body{
 <body>
     <div class="main">
       <div>
-        <h1 class="text" type="lyric" id="lyric"></h1>
+        <h1 class="text shake-text" type="lyric" id="lyric"></h1>
       </div>
       <p type="text" id="pairlyric"></p>
       <br />
