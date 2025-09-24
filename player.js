@@ -5,7 +5,7 @@ let wordElements = [];
 var _etext = document.getElementById("lyric");
 const lyricElement = document.getElementById('lyric');
 const pairLyricElement = document.getElementById('pairlyric');
-const shake = document.querySelector('.shake');
+const shake = document.querySelector('.shake-text');
 fetch(lyricpath)
   .then(response => {
     if (!response.ok) {
@@ -22,10 +22,7 @@ function initLyrics() {
     setInterval(updateLyrics, 10);//刷新
 }
 function updateLyrics() {
-	shake.style.animationPlayState = 'running';
-	audio.addEventListener('paused', function(e){
-		shake.style.animationPlayState = 'paused';
-	});
+	console.log(audio.paused);
     const currentTime = audio.currentTime;
                 
     let newIndex = -1;
