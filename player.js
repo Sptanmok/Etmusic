@@ -25,7 +25,7 @@ function updateLyrics() {
 	shake.style.animationPlayState = 'running';
 	audio.addEventListener('paused', function(e){
 		shake.style.animationPlayState = 'paused';
-	}
+	});
     const currentTime = audio.currentTime;
                 
     let newIndex = -1;
