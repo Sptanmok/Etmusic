@@ -5,7 +5,7 @@ let wordElements = [];
 var _etext = document.getElementById("lyric");
 const lyricElement = document.getElementById('lyric');
 const pairLyricElement = document.getElementById('pairlyric');
-const shake = document.querySelector('.shake-text');
+const shake = document.querySelector('.shake');
 fetch(lyricpath)
   .then(response => {
     if (!response.ok) {
