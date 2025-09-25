@@ -18,6 +18,7 @@ fetch(lyricpath)
 	initLyrics();
   })
 function initLyrics() {
+    let html = '';
 	for (let i = 0; i < jsonlyrics.lyrics.length; i++) {
 		mgds += `<div><h2 style="--progress:0%">${jsonlyrics.lyrics[i].text}</h2><p>${jsonlyrics.lyrics[i].pairlyric}</p></div>`;
 	}
