@@ -18,16 +18,16 @@ fetch(lyricpath)
 	initLyrics();
   })
 function initLyrics() {
+	for (let i = 0; i < jsonlyrics.lyrics.length; i++) {
+		mgds += `<div><h2 style="--progress:0%">${jsonlyrics.lyrics[i].text}</h2><p>${jsonlyrics.lyrics[i].pairlyric}</p></div>`;
+	}
+	lyricElement.innerHTML = mgds
+	phraseElement = lyricElement.getElementsByTagName('h2');
+	pairPhraseElement = lyricElement.getElementsByTagName('p');
     setInterval(updateLyrics, 10);//刷新
 }
 function updateLyrics() {
-	if (audio.paused == true){
-		lyricElement.style.animationPlayState = 'paused';
-	} else{
-		lyricElement.style.animationPlayState = 'running';
-	}
     const currentTime = audio.currentTime;
-                
     let newIndex = -1;
     for (let i = 0; i < jsonlyrics.lyrics.length; i++) {
         if (currentTime >= jsonlyrics.lyrics[i].time) {
@@ -36,7 +36,6 @@ function updateLyrics() {
             break;
        }
     }
-                
     if (newIndex !== currentLyricIndex && newIndex !== -1) {
         currentLyricIndex = newIndex;
         displayCurrentLyric();
@@ -53,9 +52,11 @@ function displayCurrentLyric() {
     for (let i = 0; i < currentLyric.etext.length; i++) {
         html += `<span style="--progress:0%">${currentLyric.etext[i].text}</span>`;
     }
-        lyricElement.innerHTML = html;
+    phraseElement[currentLyricIndex].innerHTML = html;
+	phraseElement[currentLyricIndex].classList.add('currently');
+	phraseElement[currentLyricIndex - 1].classList.remove('currently');
     wordElements = lyricElement.getElementsByTagName('span');
-    pairLyricElement.textContent = currentLyric.pairlyric;
+    pairPhraseElement.textContent = currentLyric.pairlyric;
 }
 function highlightWords(currentTime) {
     const currentLyric = jsonlyrics.lyrics[currentLyricIndex];
