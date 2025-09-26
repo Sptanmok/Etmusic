@@ -4,7 +4,6 @@ let currentLyricIndex = -1;
 let wordElements = [];
 var _etext = document.getElementById("lyric");
 const lyricElement = document.getElementById('lyric');
-const pairLyricElement = document.getElementById('pairlyric');
 fetch(lyricpath)
   .then(response => {
     if (!response.ok) {
@@ -20,11 +19,10 @@ fetch(lyricpath)
 function initLyrics() {
     let mgds = '';
 	for (let i = 0; i < jsonlyrics.lyrics.length; i++) {
-		mgds += `<div><h2 style="--progress:0%">${jsonlyrics.lyrics[i].text}</h2><p>${jsonlyrics.lyrics[i].pairlyric}</p></div>`;
+		mgds += `<div><h2>${jsonlyrics.lyrics[i].text}</h2><p>${jsonlyrics.lyrics[i].pairlyric}</p></div>`;
 	}
 	lyricElement.innerHTML = mgds
-	phraseElement = lyricElement.getElementsByTagName('h2');
-	pairPhraseElement = lyricElement.getElementsByTagName('p');
+	divElement = lyricElement.getElementsByTagName('div');
     setInterval(updateLyrics, 10);//刷新
 }
 function updateLyrics() {
@@ -37,11 +35,16 @@ function updateLyrics() {
             break;
        }
     }
+	
+                
     if (newIndex !== currentLyricIndex && newIndex !== -1) {
+		if (currentLyricIndex !== -1 && divElement[currentLyricIndex]) {
+		    divElement[currentLyricIndex].classList.remove('currently');
+		}
         currentLyricIndex = newIndex;
+		aphraseElement = divElement[currentLyricIndex]
         displayCurrentLyric();
     }
-                
     if (currentLyricIndex !== -1) {
         highlightWords(currentTime);
     }
@@ -53,11 +56,13 @@ function displayCurrentLyric() {
     for (let i = 0; i < currentLyric.etext.length; i++) {
         html += `<span style="--progress:0%">${currentLyric.etext[i].text}</span>`;
     }
-    phraseElement[currentLyricIndex].innerHTML = html;
-	phraseElement[currentLyricIndex].classList.add('currently');
-	phraseElement[currentLyricIndex - 1].classList.remove('currently');
-    wordElements = lyricElement.getElementsByTagName('span');
+	phraseElement = aphraseElement.getElementsByTagName('h2');
+	pairPhraseElement = aphraseElement.getElementsByTagName('p');
+    phraseElement.innerHTML = html; 
+	console.log(phraseElement);
+    wordElements = phraseElement.getElementsByTagName('span');
     pairPhraseElement.textContent = currentLyric.pairlyric;
+	divElement[currentLyricIndex].classList.add('currently');
 }
 function highlightWords(currentTime) {
     const currentLyric = jsonlyrics.lyrics[currentLyricIndex];

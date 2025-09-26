@@ -1,31 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-<style>
-.text{}
-.player{
-	margin: 0 auto;
-}
-.text span {
-    display: inline-block;
-    background: linear-gradient(to right, #000000 var(--progress, 0%), #818282 var(--progress, 0%));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    transition: --progress 0.1s ease;
-	white-space: normal;
-}
-.highlight {
-    color: #FFD700;
-}
-</style>
+<style type="text/css" href="player.css"></style>
 <meta charset="utf-8">
 <title>demo</title>
 </head>
 <body>
     <div class="player">
       <div>
-        <h1 class="text" type="lyric" id="lyric"></h1>
+        <h1 class="text shake-text" type="lyric" id="lyric"></h1>
       </div>
       <p type="text" id="pairlyric"></p>
       <br />
