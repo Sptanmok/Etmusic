@@ -26,8 +26,8 @@ const analyser = audioContext.createAnalyser();
 analyser.fftSize = 256;
 const bufferLength = analyser.frequencyBinCount;
 const dataArray = new Uint8Array(bufferLength);
-const source = audioContext.createMediaElementSource(audio);
-source.connect(analyser);
+const dd = audioContext.createMediaElementSource(audio);
+dd.connect(analyser);
 analyser.connect(audioContext.destination);
 function drawSpectrum() {
   requestAnimationFrame(drawSpectrum);
