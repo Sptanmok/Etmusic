@@ -2,7 +2,6 @@ const audio = document.getElementById('audio');
 var lyricpath = audio.getAttribute('lyricpath');
 let currentLyricIndex = -1;
 let wordElements = [];
-var _etext = document.getElementById("lyric");
 const lyricElement = document.getElementById('lyric');
 fetch(lyricpath)
   .then(response => {
@@ -18,8 +17,14 @@ fetch(lyricpath)
   })
 function initLyrics() {
     let mgds = '';
+	let pair;
 	for (let i = 0; i < jsonlyrics.lyrics.length; i++) {
-		mgds += `<div><h2>${jsonlyrics.lyrics[i].text}</h2><p>${jsonlyrics.lyrics[i].pairlyric}</p></div>`;
+		if (jsonlyrics.lyrics[i].pairlyric == undefined){
+			pair = ""
+		}else{
+			pair = jsonlyrics.lyrics[i].pairlyric
+		}
+		mgds += `<div><h2>${jsonlyrics.lyrics[i].text}</h2><p>${pair}</p></div>`;
 	}
 	lyricElement.innerHTML = mgds
 	divElement = lyricElement.getElementsByTagName('div');
@@ -39,7 +44,15 @@ function updateLyrics() {
                 
     if (newIndex !== currentLyricIndex && newIndex !== -1) {
 		if (currentLyricIndex !== -1 && divElement[currentLyricIndex]) {
+			let pair;
+			if (jsonlyrics.lyrics[currentLyricIndex].pairlyric == undefined){
+				pair = ""
+		    }else{
+				pair = jsonlyrics.lyrics[currentLyricIndex].pairlyric
+		    }
 		    divElement[currentLyricIndex].classList.remove('currently');
+			
+			divElement[currentLyricIndex].innerHTML = `<h2>${jsonlyrics.lyrics[currentLyricIndex].text}</h2><p>${pair}</p>`;
 		}
         currentLyricIndex = newIndex;
 		aphraseElement = divElement[currentLyricIndex]
@@ -56,8 +69,8 @@ function displayCurrentLyric() {
     for (let i = 0; i < currentLyric.etext.length; i++) {
         html += `<span style="--progress:0%">${currentLyric.etext[i].text}</span>`;
     }
-	phraseElement = aphraseElement.getElementsByTagName('h2');
-	pairPhraseElement = aphraseElement.getElementsByTagName('p');
+	phraseElement = aphraseElement.getElementsByTagName('h2')[0];
+	pairPhraseElement = aphraseElement.getElementsByTagName('p')[0];
     phraseElement.innerHTML = html; 
 	console.log(phraseElement);
     wordElements = phraseElement.getElementsByTagName('span');

@@ -57,8 +57,8 @@
                //获取和处理普通时间
                const pairlyricif = result.lyrics.findIndex(user => user.time == totalSeconds);
                if (pairlyricif != -1) {
-               	result.lyrics[pairlyricif].pairlyric = text;
-               	continue;
+               	 result.lyrics[pairlyricif].pairlyric = text;
+               	 continue;
                }
                //处理副歌词
                ;
