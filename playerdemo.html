@@ -14,22 +14,17 @@
       <br />
 	  <canvas id="spectrum" width="800" height="200"></canvas>
 	  <div class="player">
-        <audio id="audio" src="https://music.emnasop.cn/CountingStars-OneRepublic.mp3" controls style="width:100%" lyricpath="./CountingStars-OneRepublic.json"></audio>
+        <audio id="audio" src="CountingStars-OneRepublic.mp3" controls style="width:100%" lyricpath="./CountingStars-OneRepublic.json"></audio>
       </div>
     </div>
 <script src="player.js"></script>
 <script>
-// 获取页面中的音频和画布元素
 const canvas = document.getElementById('spectrum');
 const ctx = canvas.getContext('2d');
-
-// 创建音频上下文
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-// 创建音频分析器
 const analyser = audioContext.createAnalyser();
-analyser.fftSize = 256; // 设置频谱的大小
-const bufferLength = analyser.frequencyBinCount; // 获取频谱条数量
+analyser.fftSize = 256;
+const bufferLength = analyser.frequencyBinCount;
 const dataArray = new Uint8Array(bufferLength);
 const source = audioContext.createMediaElementSource(audio);
 source.connect(analyser);
@@ -47,11 +42,7 @@ function drawSpectrum() {
 
   for (let i = 0; i < bufferLength; i++) {
     barHeight = dataArray[i];
-    const r = barHeight + (25 * (i / bufferLength));
-    const g = 250 * (i / bufferLength);
-    const b = 50;
-    
-    ctx.fillStyle = `rgb(${r},${g},${b})`;
+    ctx.fillStyle = "white";
     ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
 
     x += barWidth + 1;
