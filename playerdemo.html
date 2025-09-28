@@ -12,7 +12,7 @@
       </div>
       <p type="text" id="pairlyric"></p>
       <br />
-	  <canvas id="spectrum" width="800" height="100"></canvas>
+	  <canvas id="spectrum" width="800" height="200"></canvas>
 	  <div class="player">
         <audio id="audio" src="CountingStars-OneRepublic.mp3" controls style="width:100%" lyricpath="./CountingStars-OneRepublic.json"></audio>
       </div>
@@ -31,21 +31,17 @@ dd.connect(analyser);
 analyser.connect(audioContext.destination);
 function drawSpectrum() {
   requestAnimationFrame(drawSpectrum);
-
   analyser.getByteFrequencyData(dataArray);
-
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
   const barWidth = (canvas.width / bufferLength) * 2.5;
   let barHeight;
   let x = 0;
-
   for (let i = 0; i < bufferLength; i++) {
     barHeight = dataArray[i];
     ctx.fillStyle = "white";
     ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
 
-    x += barWidth + 1.5;
+    x += barWidth + 1.2;
   }
 }
 
