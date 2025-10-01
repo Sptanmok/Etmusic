@@ -18,38 +18,5 @@
       </div>
     </div>
 <script src="player.js"></script>
-<script>
-const canvas = document.getElementById('spectrum');
-const ctx = canvas.getContext('2d');
-const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-const analyser = audioContext.createAnalyser();
-analyser.fftSize = 256;
-const bufferLength = analyser.frequencyBinCount;
-const dataArray = new Uint8Array(bufferLength);
-const dd = audioContext.createMediaElementSource(audio);
-dd.connect(analyser);
-analyser.connect(audioContext.destination);
-function drawSpectrum() {
-  requestAnimationFrame(drawSpectrum);
-  analyser.getByteFrequencyData(dataArray);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const barWidth = (canvas.width / bufferLength) * 2.5;
-  let barHeight;
-  let x = 0;
-  for (let i = 0; i < bufferLength; i++) {
-    barHeight = dataArray[i];
-    ctx.fillStyle = "white";
-    ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-
-    x += barWidth + 1.2;
-  }
-}
-
-audio.onplay = () => {
-  audioContext.resume().then(() => {
-    drawSpectrum();
-  });
-};
-</script>
 </body>
 </html>
