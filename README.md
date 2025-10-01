@@ -3,6 +3,11 @@
 半成品
 
 一个简易支持卡拉ok的字幕音乐播放器
+### 生成歌词json
+
+在converter.html可把增强版lrc文件转换为json格式
+
+目前只支持增强版lrc的转换
 
 ### 在你的网站内使用
 
@@ -39,7 +44,7 @@ audio标签示例格式
 
 副歌词（双语歌词）使用id：pairlyric
 
-如果你想要实现频谱条效果，可以在创建canvas
+如果你想要实现频谱条效果，可以创建canvas
 ```html
 <canvas id="spectrum" width="800" height="300"></canvas>
 ```
