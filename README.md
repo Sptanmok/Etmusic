@@ -20,7 +20,7 @@
 你需要确保你的网站包含以下css
 
 ```css
-.text span {
+.lyric span {
     display: inline-block;
     background: linear-gradient(to right, #000000 var(--progress, 0%), #818282 var(--progress, 0%));
     -webkit-background-clip: text;
@@ -40,11 +40,13 @@ audio标签示例格式
 <audio id="audio" src="你的音乐文件路径" controls="" lyricpath="你的json歌词文件路径"></audio>
 ```
 
-你需要在需要显示歌词的html文字标签使用id：lyric
+你需要在需要显示歌词的html文字标签使用id:lyric
 
-副歌词（双语歌词）使用id：pairlyric
+并且包含class:lyric
+
+副歌词（双语歌词）使用id:pairlyric
 
 如果你想要实现频谱条效果，可以创建canvas
 ```html
-<canvas id="spectrum" width="800" height="300"></canvas>
+<canvas id="spectrum" width="自定义" height="自定义"></canvas>
 ```
