@@ -42,6 +42,11 @@ function updateLyrics() {
         currentLyricIndex = newIndex;
         displayCurrentLyric();
     }
+	if (document.hidden == true) {
+		document.title = jsonlyrics.lyrics[currentLyricIndex].text;
+	}else{
+		document.title = title
+	}
                 
     if (currentLyricIndex !== -1) {
         highlightWords(currentTime);
