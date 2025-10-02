@@ -56,6 +56,9 @@ function displayCurrentLyric() {
         lyricElement.innerHTML = html;
     wordElements = lyricElement.getElementsByTagName('span');
     pairLyricElement.textContent = currentLyric.pairlyric;
+	if (document.hidden == true) {
+		document.title = currentLyric.text;
+	}
 }
 function highlightWords(currentTime) {
     const currentLyric = jsonlyrics.lyrics[currentLyricIndex];
