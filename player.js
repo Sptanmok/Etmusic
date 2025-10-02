@@ -5,6 +5,7 @@ let wordElements = [];
 var _etext = document.getElementById("lyric");
 const lyricElement = document.getElementById('lyric');
 const pairLyricElement = document.getElementById('pairlyric');
+const title = document.title
 fetch(lyricpath)
   .then(response => {
     if (!response.ok) {
@@ -58,7 +59,10 @@ function displayCurrentLyric() {
     pairLyricElement.textContent = currentLyric.pairlyric;
 	if (document.hidden == true) {
 		document.title = currentLyric.text;
+	}else{
+		document.title = title
 	}
+		
 }
 function highlightWords(currentTime) {
     const currentLyric = jsonlyrics.lyrics[currentLyricIndex];
