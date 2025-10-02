@@ -42,7 +42,7 @@ function updateLyrics() {
         currentLyricIndex = newIndex;
         displayCurrentLyric();
     }
-	if (document.hidden == true) {
+	if (document.hidden == true && audio.paused == false) {
 		document.title = jsonlyrics.lyrics[currentLyricIndex].text;
 	}else{
 		document.title = title
