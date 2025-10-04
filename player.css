@@ -1,6 +1,7 @@
 body{
 	background-image:url('./20250820072923875926.webp');
 	background-repeat: no-repeat;
+	background-size: cover;
 	font-family: '微软雅黑', sans-serif;
     min-height: 100vh;
     display: flex;
