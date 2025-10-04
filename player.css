@@ -1,5 +1,6 @@
 body{
 	background-image:url('./20250820072923875926.webp');
+	background-repeat: no-repeat;
 	font-family: '微软雅黑', sans-serif;
     min-height: 100vh;
     display: flex;
@@ -14,6 +15,7 @@ body{
     padding: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 	font: 18px Saira, LXGWWenKai, sans-serif;
+	backdrop-filter: blur(5px);
 }
 .player {
    clear:both
