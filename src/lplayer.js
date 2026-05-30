@@ -51,7 +51,10 @@ function updateLyrics() {
 				pair = jsonlyrics.lyrics[currentLyricIndex].pairlyric
 		    }
 		    divElement[currentLyricIndex].classList.remove('currently');
-			
+			divElement[currentLyricIndex].classList.add('ly_restore');
+            setTimeout((c) => {
+                divElement[c].classList.remove('ly_restore');
+            }, 300, currentLyricIndex);
 			divElement[currentLyricIndex].innerHTML = `<h2>${jsonlyrics.lyrics[currentLyricIndex].text}</h2><p>${pair}</p>`;
 		}
         currentLyricIndex = newIndex;

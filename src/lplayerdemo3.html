@@ -12,7 +12,6 @@
 }
 .text h2{
 	color: #555657;
-	transition: all ease-in-out 0.3s;
 	font-size: 1.5em;
 }
 .text p{
@@ -32,9 +31,20 @@
 }
 .currently h2{
 	transition: all ease-in-out 0.3s;
-	font-weight: bold;
-	filter: drop-shadow(...);
 	font-size: 2em;
+}
+@keyframes lyric_restore {
+    0% {
+        color: #000;
+        font-size: 2em;
+    }
+    100% {
+        color: #555657;
+        font-size: 1.5em;
+    }
+}
+.ly_restore h2{
+    animation: lyric_restore 0.3s forwards;
 }
 
 
@@ -44,7 +54,7 @@
 </head>
 <body>
     <div class="player">
-	  <audio id="audio" src="反方向的钟 - 周杰伦.flac" controls style="width:100%" lyricpath="https://music.emnasop.cn/%E5%8F%8D%E6%96%B9%E5%90%91%E7%9A%84%E9%92%9F%20-%20%E5%91%A8%E6%9D%B0%E4%BC%A6.json"></audio>
+	  <audio id="audio" src="Shouldn't Have To Be Like That - Fra Lippo Lippi · The Best Of.m4a" controls style="width:100%" lyricpath="./Shouldn't Have To Be Like That - Fra Lippo Lippi · The Best Of.json"></audio>
       <div>
       <div class="text" type="lyric" id="lyric"></div>
       </div>

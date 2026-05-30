@@ -194,15 +194,19 @@ function filenamecl(name){
     return result;
 }
 async function YrcToJson(musicid, meta){
-    function prpdl(yrc, timesec){
+    function prpdl(yrc, timesec,fault_tolerance){
         const timeTagRegex = /\[(\d+):(\d+)(?:[.:](\d+))?\](.*)/;
         let pairif = false;
         let romaif = false;
         let pairtext = "";
-        let min_pairtime = 3;
-        let min_romatime = 3;
+        let min_pairtime = fault_tolerance?3:0.8;
+        let min_romatime = fault_tolerance?3:0.8;
         if(yrc.tlyric.lyric){
-            const pairlyrics = yrc.tlyric.lyric.split("\n").filter(item => timeTagRegex.test(item));
+            let pairlyrics = yrc.tlyric.lyric.split("\n").filter(item => timeTagRegex.test(item));
+            if(yrc.ytlrc&&yrc.ytlrc.lyric){
+                pairlyrics = yrc.ytlrc.lyric.split("\n").filter(item => timeTagRegex.test(item));
+                min_pairtime = 0.01;
+            }
             for(let i = 0; i < pairlyrics.length; i++){
                 let lyricMatch = pairlyrics[i].match(timeTagRegex);
                 if(!lyricMatch) continue;
@@ -218,7 +222,11 @@ async function YrcToJson(musicid, meta){
         }
         let romatext = '';
         if(yrc.romalrc.lyric){
-            const romalyrics = yrc.romalrc.lyric.split("\n").filter(item => timeTagRegex.test(item));
+            let romalyrics = yrc.romalrc.lyric.split("\n").filter(item => timeTagRegex.test(item));
+            if(yrc.yromalrc&&yrc.yromalrc.lyric){
+                romalyrics = yrc.yromalrc.lyric.split("\n").filter(item => timeTagRegex.test(item));
+                min_romatime = 0.01;
+            }
             for(let i = 0; i < romalyrics.length; i++){
                 let lyricMatch = romalyrics[i].match(timeTagRegex);
                 if(!lyricMatch) continue;
@@ -254,7 +262,9 @@ async function YrcToJson(musicid, meta){
     if(yrc.yrc && yrc.yrc.lyric){
         yrc.yrc.lyric = yrc.yrc.lyric.replace(/^\uFEFF/, '');
         const lyrics = yrc.yrc.lyric.split("\n");
+        let i=0;
         for(const lyric of lyrics){
+            i++;
             let lyricMatch = lyric.match(zqTagRegex);
             let text;
             let timesec;
@@ -275,16 +285,30 @@ async function YrcToJson(musicid, meta){
                 json.metadata.zq = eljson.length > 0;
             }
             text = text.replace(/\(\d+,\d+,\d+\)/g, '')
-            pdjg = prpdl(yrc, timesec)
+            pdjg = prpdl(yrc, timesec,false)
+            if(!pdjg.pairif&&json.lyrics[i-1]?.pairlyric){
+                pdjg = prpdl(yrc, timesec,true)
+            }
+            if(!pdjg.romaif&&json.lyrics[i-1]?.romanizationslyric){
+                pdjg = prpdl(yrc, timesec,true)
+            }
             json.lyrics.push({time: timesec,text: text,etext: eljson,pairlyric: pdjg.pairtext,romanizationslyric: pdjg.romatext})
         }
     }else if(yrc.lrc.lyric){//没有逐字/词歌词
         let lyrics = yrc.lrc.lyric.split("\n").filter(item => timeTagRegex.test(item))
+        let i=0;
         for(const lyric of lyrics){
+            i++;
             let lyricMatch = lyric.match(timeTagRegex);
             const decimal = lyricMatch[3] ? (lyricMatch[3].toString().length === 2 ? parseInt(lyricMatch[3]) / 100 : parseInt(lyricMatch[3]) / 1000) : 0;
             let timesec = parseInt(lyricMatch[1])*60+parseInt(lyricMatch[2])+decimal
-            pdjg = prpdl(yrc, timesec)
+            pdjg = prpdl(yrc, timesec,false)
+            if(!pdjg.pairif&&json.lyrics[i-1]?.pairlyric){
+                pdjg = prpdl(yrc, timesec,true)
+            }
+            if(!pdjg.romaif&&json.lyrics[i-1]?.romanizationslyric){
+                pdjg = prpdl(yrc, timesec,true)
+            }
             json.lyrics.push({time:timesec,text:lyricMatch[4],pairlyric: pdjg.pairtext,romanizationslyric: pdjg.romatext})
         }
     }else{
@@ -319,7 +343,7 @@ async function QQJsonGET(name,artist,album,yrcjson){
     }
     //const datae = await axios.get(`${qqmusiclyric_api}?name=${encodeURIComponent(name.replace(/ - .*/, ''))}&artists=${encodeURIComponent(artist.replace(/\/.*/, ''))}&album=${encodeURIComponent(album)}&cid=${i}`)
     let Request_timed_out_b = false;
-    let nme = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name)} ${encodeURIComponent(artist)}`,{validateStatus: function (status) {return (status==200)||(status==502)||(status==500);},headers: {'user-agent': user_agent_b},timeout: 10000})
+    let nme = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name)} ${encodeURIComponent(artist.replace(/\/[^/]*$/, ""))}`,{validateStatus: function (status) {return (status==200)||(status==502)||(status==500);},headers: {'user-agent': user_agent_b},timeout: 10000})
     .catch(err => {
     if (err.code === 'ECONNABORTED') {
         console.error('api.vkeys.cn请求超时！');
@@ -329,15 +353,15 @@ async function QQJsonGET(name,artist,album,yrcjson){
     while(!nme||nme.status!==200||Request_timed_out_b){
         console.error("api.vkeys.cn Request failed_       sss")
         await delay(1000);
-        nme = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name)} ${encodeURIComponent(artist)}`,{validateStatus: function (status) {return (status==200)||(status==502)||(status==500);},headers: {'user-agent': user_agent_b},timeout: 10000})
+        nme = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name)} ${encodeURIComponent(artist.replace(/\/[^/]*$/, ""))}`,{validateStatus: function (status) {return (status==200)||(status==502)||(status==500);},headers: {'user-agent': user_agent_b},timeout: 10000})
         Request_timed_out_b = true;
     }
     let mi;
-    if(!nme.data.data||!Array.isArray(nme.data.data)) {sadee = `${sadee}${name} - ${artist} ~ ${album}\n`;return};
+    if(!nme.data.data||!Array.isArray(nme.data.data)||nme.data.data.length === 0) {sadee = `${sadee}${name} - ${artist} ~ ${album}\n`;return};
     let aru = stringSimilarity(nme.data.data[0].singer,artist)
     let tiu = stringSimilarity(nme.data.data[0].name,name)
     let alu = stringSimilarity(nme.data.data[0].album,album)
-    if(aru<0.5&&tiu<0.8&&alu<0.8){
+    if(aru<0.3&&tiu<0.8&&alu<0.3){
         return {metadata:{zq:false}};
     }
     let Request_timed_out = false;
