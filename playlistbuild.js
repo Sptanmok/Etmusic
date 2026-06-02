@@ -22,7 +22,15 @@ const jymaster = false;
 let no_wyy = 0;
 let sesc_ppe = 0;
 //↑↑↑配置处↑↑↑
-
+axiosRetry(axios, {
+  retries: 3,
+  retryDelay: axiosRetry.exponentialDelay,
+  retryCondition: (error) => {
+    return axiosRetry.isNetworkOrIdempotentRequestError(error) ||
+           error.code === 'ECONNRESET' ||
+           error.message.includes('stream has been aborted');
+  }
+});
 if (!fs.existsSync("dist")) fs.mkdirSync("dist", { recursive: true });
 if (!fs.existsSync("dist/musicfile")) fs.mkdirSync("dist/musicfile", { recursive: true });
 if (!fs.existsSync("dist/musicfile/img")) fs.mkdirSync("dist/musicfile/img", { recursive: true });
@@ -342,45 +350,29 @@ async function QQJsonGET(name,artist,album,yrcjson){
         return Num_matches;
     }
     //const datae = await axios.get(`${qqmusiclyric_api}?name=${encodeURIComponent(name.replace(/ - .*/, ''))}&artists=${encodeURIComponent(artist.replace(/\/.*/, ''))}&album=${encodeURIComponent(album)}&cid=${i}`)
-    let Request_timed_out_b = false;
-    let nme = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name)} ${encodeURIComponent(artist.replace(/\/[^/]*$/, ""))}`,{validateStatus: function (status) {return (status==200)||(status==502)||(status==500);},headers: {'user-agent': user_agent_b},timeout: 10000})
-    .catch(err => {
-    if (err.code === 'ECONNABORTED') {
-        console.error('api.vkeys.cn请求超时！');
-        Request_timed_out_b = true;
-    }
-    });
-    while(!nme||nme.status!==200||Request_timed_out_b){
+    let nme = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name.replace(/-.*$/, ''))}%20${encodeURIComponent(artist.replace(/\/[^/]*$/, ""))}%20${album==name?'':encodeURIComponent(album)}`,{validateStatus: function (status) {return (status==200)||(status==502)||(status==500);},headers: {'user-agent': user_agent_b},timeout: 10000})
+    while(!nme||nme.status!==200){
         console.error("api.vkeys.cn Request failed_       sss")
         await delay(1000);
-        nme = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name)} ${encodeURIComponent(artist.replace(/\/[^/]*$/, ""))}`,{validateStatus: function (status) {return (status==200)||(status==502)||(status==500);},headers: {'user-agent': user_agent_b},timeout: 10000})
-        Request_timed_out_b = true;
+        nme = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name.replace(/-.*$/, ''))}%20${encodeURIComponent(artist.replace(/\/[^/]*$/, ""))}%20${album==name?'':encodeURIComponent(album)}`,{validateStatus: function (status) {return (status==200)||(status==502)||(status==500);},headers: {'user-agent': user_agent_b},timeout: 10000})
     }
     let mi;
     if(!nme.data.data||!Array.isArray(nme.data.data)||nme.data.data.length === 0) {sadee = `${sadee}${name} - ${artist} ~ ${album}\n`;return};
-    let aru = stringSimilarity(nme.data.data[0].singer,artist)
-    let tiu = stringSimilarity(nme.data.data[0].name,name)
-    let alu = stringSimilarity(nme.data.data[0].album,album)
-    if(aru<0.3&&tiu<0.8&&alu<0.3){
-        return {metadata:{zq:false}};
+    if(!nme.data.data[0].song||!nme.data.data[0].singer||!nme.data.data[0].album) {console.error("NSA不存在");return};
+    let aru = stringSimilarity(nme.data.data[0].singer.replace(/\([^)]*\)/g, '').replace(/ /g, ""),artist.replace(/\([^)]*\)/g, '').replace(/ /g, ""))
+    let tiu = stringSimilarity(nme.data.data[0].song.replace(/\([^)]*\)/g, '').replace(/-.*$/, '').replace(/ /g, ""),name.replace(/\([^)]*\)/g, '').replace(/ /g, ""))
+    let alu = album==name?1:stringSimilarity(nme.data.data[0].album.replace(/\([^)]*\)/g, '').replace(/ /g, ""),album.replace(/\([^)]*\)/g, '').replace(/ /g, ""))
+    if(aru<0.3||tiu<0.8||alu<0.3){
+        return {metadata:{zq:false,message:`匹配度过低，放弃匹配。相似度：歌手${aru.toFixed(2)}，歌曲${tiu.toFixed(2)}，专辑${alu.toFixed(2)}。${nme.data.data[0].song} - ${nme.data.data[0].singer} · ${nme.data.data[0].album}`}};
     }
-    let Request_timed_out = false;
     let datae = await axios.get(`https://api.vkeys.cn/v2/music/tencent/lyric?id=${nme.data.data[0].id}`,{validateStatus: function (status) {return (status==200)||(status==502)||(status==500);},headers: {'user-agent': user_agent_b},timeout: 10000})//api有时会出现502错误
-    .catch(err => {
-    if (err.code === 'ECONNABORTED') {
-        console.error('api.vkeys.cn请求超时！');
-        Request_timed_out = true;
-    }
-    });
-
-    while(!datae||datae.status!==200||Request_timed_out){
+    while(!datae||datae.status!==200){
         console.error("api.vkeys.cn Request failed")
         await delay(1000);
         datae = await axios.get(`https://api.vkeys.cn/v2/music/tencent/lyric?id=${nme.data.data[0].id}`,{validateStatus: function (status) {return (status==200)||(status==502)||(status==500);},headers: {'user-agent': user_agent_b},timeout: 10000})
         .catch(err => {
         if (err.code === 'ECONNABORTED') {
             console.error('api.vkeys.cn请求超时！');
-            Request_timed_out = true;
         }
         });
     }
