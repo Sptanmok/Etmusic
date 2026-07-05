@@ -335,33 +335,50 @@ let sade ='';
 let sadee ='';
 async function QQJsonGET(name,artist,album,yrcjson){
     function QrcMatchingYrcTimelineOffset(qrcjson, yrcjson){
-        let max_ppd=0;
-        let y_i;
-        let q_i;
+        let matches = [];
         for(let i=0;i<yrcjson.length;i++){
-            const liney = yrcjson[i]
-            let max=0;
-            let nq_i;
+            const liney = yrcjson[i];
+            if(!liney.text || liney.text.length < 2) continue;
+            let best_sim = 0;
+            let nq_i = -1;
             for(let c=0;c<qrcjson.length;c++){
-                const lineq=qrcjson[c];
-                if(stringSimilarity(liney.text,lineq.text)>max){
-                    max=stringSimilarity(liney.text,lineq.text);
-                    nq_i=c;
+                const lineq = qrcjson[c];
+                if(!lineq.text || lineq.text.length < 2) continue;
+                const sim = stringSimilarity(liney.text, lineq.text);
+                if(sim > best_sim){
+                    best_sim = sim;
+                    nq_i = c;
                 }
             }
-
-            if(max>max_ppd){
-                max_ppd=max
-                y_i=i;
-                q_i=nq_i;
+            if(best_sim > 0.5 && nq_i >= 0){
+                matches.push({
+                    sim: best_sim,
+                    offset: parseFloat((liney.time - qrcjson[nq_i].time).toFixed(2))
+                });
             }
         }
-        if(y_i === undefined || q_i === undefined){
-            console.log("N")
+        if(matches.length < 3){
+            console.log("Not enough matches for offset");
             return 0;
         }
-        console.log((yrcjson[y_i].time-qrcjson[q_i].time).toFixed(2)+yrcjson[y_i].text+"/////// "+qrcjson[q_i].text+"\\\\\\"+stringSimilarity(yrcjson[y_i].text,qrcjson[q_i].text))
-        return parseFloat((yrcjson[y_i].time-qrcjson[q_i].time).toFixed(2));
+        matches.sort((a, b) => b.sim - a.sim);
+        let top = matches.slice(0, Math.min(10, matches.length));
+        let offsets = top.map(m => m.offset);
+        offsets.sort((a, b) => a - b);
+        let median = offsets.length % 2
+            ? offsets[Math.floor(offsets.length/2)]
+            : (offsets[offsets.length/2 - 1] + offsets[offsets.length/2]) / 2;
+        let mean = offsets.reduce((s, v) => s + v, 0) / offsets.length;
+        let variance = offsets.reduce((s, v) => s + (v - mean) ** 2, 0) / offsets.length;
+        let stddev = Math.sqrt(variance);
+        if(stddev > 1.5){
+            console.log(`Offset unreliable (stddev=${stddev.toFixed(2)}, pairs=${matches.length}), skipping`);
+            return 0;
+        }
+        let filtered = offsets.filter(v => Math.abs(v - median) <= stddev);
+        let finalOffset = filtered.reduce((s, v) => s + v, 0) / filtered.length;
+        console.log(`Offset: ${finalOffset.toFixed(2)}s (from ${filtered.length}/${matches.length} pairs)`);
+        return parseFloat(finalOffset.toFixed(2));
     }
     //const datae = await axios.get(`${qqmusiclyric_api}?name=${encodeURIComponent(name.replace(/ - .*/, ''))}&artists=${encodeURIComponent(artist.replace(/\/.*/, ''))}&album=${encodeURIComponent(album)}&cid=${i}`)
     let nme = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name.replace(/-.*$/, ''))}%20${encodeURIComponent(artist.replace(/\/[^/]*$/, ""))}%20${album==name?'':encodeURIComponent(album)}`,{validateStatus: function (status) {return (status==200)||(status==502)||(status==500);},headers: {'user-agent': user_agent_b},timeout: 10000})
@@ -373,9 +390,11 @@ async function QQJsonGET(name,artist,album,yrcjson){
     let mi;
     if(!nme.data.data||!Array.isArray(nme.data.data)||nme.data.data.length === 0) {sadee = `${sadee}${name} - ${artist} ~ ${album}\n`;return};
     if(!nme.data.data[0].song||!nme.data.data[0].singer||!nme.data.data[0].album) {console.error("NSA不存在");return};
-    let aru = stringSimilarity(nme.data.data[0].singer.replace(/\([^)]*\)/g, '').replace(/ /g, ""),artist.replace(/\([^)]*\)/g, '').replace(/ /g, ""))
-    let tiu = stringSimilarity(nme.data.data[0].song.replace(/\([^)]*\)/g, '').replace(/-.*$/, '').replace(/ /g, ""),name.replace(/\([^)]*\)/g, '').replace(/-.*$/, '').replace(/ /g, ""))
-    let alu = album==name?1:stringSimilarity(nme.data.data[0].album.replace(/\([^)]*\)/g, '').replace(/ /g, ""),album.replace(/\([^)]*\)/g, '').replace(/ /g, ""))
+    const qqList = qqSingerStr.split("/").filter(Boolean);
+    const wyList = wySingerStr.split("/").filter(Boolean);
+    let aru = fuzzySetSimilarity(wyList, qqList, stringSimilarity, 0.4);
+    let tiu = stringSimilarity(nme.data.data[0].song.replace(/\([^)]*\)/g, '').replace(/-.*$/, '').replace(/ /g, "").toUpperCase(),name.replace(/\([^)]*\)/g, '').replace(/-.*$/, '').replace(/ /g, "").toUpperCase())
+    let alu = album==name?1:stringSimilarity(nme.data.data[0].album.replace(/\([^)]*\)/g, '').replace(/ /g, "").toUpperCase(),album.replace(/\([^)]*\)/g, '').replace(/ /g, "").toUpperCase())
     if(aru<0.3||tiu<0.8||alu<0.3){
         return {metadata:{zq:false,message:`匹配度过低，放弃匹配。相似度：歌手${aru.toFixed(2)}，歌曲${tiu.toFixed(2)}，专辑${alu.toFixed(2)}。${nme.data.data[0].song} - ${nme.data.data[0].singer} · ${nme.data.data[0].album}`}};
     }
@@ -412,11 +431,15 @@ async function QQJsonGET(name,artist,album,yrcjson){
     return qrcjson
 }
 function QrcOffset(json,offset){
+    if(offset<3){
+        return json;
+    }
     let qrc=json;
     for(let i=0;i<qrc.lyrics.length;i++){
-        qrc.lyrics[i].time=(qrc.lyrics[i].time*1000+offset*1000)/1000
+        qrc.lyrics[i].time += offset;
         for(let c=0;c<qrc.lyrics[i].etext.length;c++){
-            qrc.lyrics[i].etext[c].time=(qrc.lyrics[i].etext[c].time*1000+offset*1000)/1000
+            qrc.lyrics[i].etext[c].start += offset;
+            qrc.lyrics[i].etext[c].end += offset;
         }
     }
     qrc.metadata.offset=offset
@@ -618,4 +641,28 @@ function stringSimilarity(a, b) {
 
     const distance = prev[lenB]; // 最终编辑距离
     return 1 - distance / Math.max(lenA, lenB);
+}
+function fuzzySetSimilarity(list1, list2, simFunc, threshold = 0.3) {
+    // 创建相似度矩阵，并为每行每列找最佳匹配，确保不重复
+    const rows = list1.length, cols = list2.length;
+    const simMatrix = Array.from({ length: rows }, (_, i) =>
+        Array.from({ length: cols }, (_, j) => simFunc(list1[i], list2[j]))
+    );
+    let totalScore = 0;
+    const usedCols = new Set();
+    for (let i = 0; i < rows; i++) {
+        let bestJ = -1, bestScore = -1;
+        for (let j = 0; j < cols; j++) {
+            if (!usedCols.has(j) && simMatrix[i][j] > bestScore) {
+                bestScore = simMatrix[i][j];
+                bestJ = j;
+            }
+        }
+        if (bestJ !== -1 && bestScore >= threshold) {
+            totalScore += bestScore;
+            usedCols.add(bestJ);
+        }
+    }
+    // 最终得分 = 总匹配分 / 较大一方数量，避免未被匹配的拉低
+    return totalScore / Math.max(rows, cols);
 }

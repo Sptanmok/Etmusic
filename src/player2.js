@@ -129,8 +129,13 @@ function displayCurrentLyric() {
     }
 }
 function arowfadeWordsmode3(){
+    let previous_direction;
     for(let i = 0;i < wordElements.length;i++){
         let bianD = Math.ceil(4 - (Math.random())*4)
+        if(previous_direction && bianD === previous_direction){
+            bianD = bianD === 4 ? 1 : bianD + 1;
+        }
+        previous_direction = bianD;
         let xcs = 20-(Math.random())*40
         let inX;let inY;let outX;let outY;
         if(bianD===1){inY=20;inX=xcs;outY=-20;outX=-xcs;}
@@ -242,6 +247,9 @@ let oldAudioVisualizationModeSelection;
 let startmove = 0;
 let barmove = startmove;
 let barmoveb = window.innerWidth;
+let debug_ojb_a = document.getElementById('a');
+let debug_ojb_b = document.getElementById('b');
+let debug_ojb_c = document.getElementById('c');
 setInterval(updateBarmove,20);
 function updateBarmove() {
     barmove++;
@@ -249,6 +257,10 @@ function updateBarmove() {
     if(barmove >= canvasb.width){
         barmove = startmove;
         barmoveb = window.innerWidth;
+    }
+    if(true){//debug
+        debug_ojb_a.textContent = "barmove: "+barmove;
+        debug_ojb_b.textContent = "barmoveb: "+barmoveb;
     }
 }
 let oldwindowwidth = 0;
@@ -301,6 +313,7 @@ function drawSpectrum() {
   }
   function draw_b(){
     let sjdataArray = dataArray.slice(20,20+bufferLengthb+1);
+    debug_ojb_c.textContent = "length: "+sjdataArray.length;
     /*
     for(let i=0;i<rawdataArray.length;i++){
         sjdataArray.push(rawdataArray[suijsz[i]])
@@ -327,22 +340,26 @@ function drawSpectrum() {
     let barHeight;
     let x = 0;
     let yic_mun=0;
+    const width = canvasb.width;
     for (let i = 0; i < sjdataArray.length; i++) {
         barHeight = (sjdataArray[i]-min)/(max-min>0?max-min:1)*(canvasb.height-120);
         ctxb.fillStyle = "white";
-        if(x+barmove < canvasb.width){
+        if(x+barmove < width){
             ctxb.fillRect(x+barmove, 0, 60, barHeight);
             ctxb.beginPath();
             ctxb.arc(x+barmove+30, barHeight, 30, 0, 2 * Math.PI, false);
             ctxb.fill();
         }
-        if(x+barmove > canvasb.width){
+        if(x+barmove >= width){
             yic_mun++;
-            ctxb.fillRect(barmove-yic_mun*73, 0, 60, barHeight);
+            ctxb.fillRect((x+barmove)-(width+73), 0, 60, barHeight);
             ctxb.beginPath();
-            ctxb.arc(barmove-yic_mun*73+30, barHeight, 30, 0, 2 * Math.PI, false);
+            ctxb.arc((x+barmove)-(width+73)+30, barHeight, 30, 0, 2 * Math.PI, false);
             ctxb.fill();
         }
+        ctxb.fillStyle = "black";
+        ctxb.font = "48px serif";
+        ctxb.fillText(i, barmove+x<width?barmove+x:(x+barmove)-(width+73), 50);
         x += 73;
     }
     x=0;
@@ -350,19 +367,22 @@ function drawSpectrum() {
     for (let i = sjdataArray.length-1; i >= 0; i--) {
         barHeight = (sjdataArray[i]-min)/(max-min>0?max-min:1)*(canvasd.height-120);
         ctxd.fillStyle = "white";
-        if(x+barmoveb < canvasb.width){
+        if(x+barmoveb < width){
             ctxd.fillRect(barmoveb+x, canvasd.height - barHeight, 60, barHeight);
             ctxd.beginPath()
             ctxd.arc(barmoveb+x+30, canvasd.height - barHeight, 30, 0, 2 * Math.PI, true);
             ctxd.fill();
         }
-        if(x+barmoveb > canvasb.width){
+        if(x+barmoveb >= width){
             yic_mun++;
-            ctxd.fillRect(barmoveb-yic_mun*73, canvasd.height - barHeight, 60, barHeight);
+            ctxd.fillRect((x+barmoveb)-(width+73), canvasd.height - barHeight, 60, barHeight);
             ctxd.beginPath();
-            ctxd.arc(barmoveb-yic_mun*73+30, canvasd.height - barHeight, 30, 0, 2 * Math.PI, true);
+            ctxd.arc((x+barmoveb)-(width+73)+30, canvasd.height - barHeight, 30, 0, 2 * Math.PI, true);
             ctxd.fill();
         }
+        ctxd.fillStyle = "black";
+        ctxd.font = "48px serif";
+        ctxd.fillText(i, barmoveb+x<width?barmoveb+x:(x+barmoveb)-(width+73), canvasd.height - 10);
         x += 73;
     }
 

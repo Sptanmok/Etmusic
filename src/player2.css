@@ -44,7 +44,9 @@ body{
 @keyframes fadeInUp {
   0% {
     opacity: 0;
-    transform: translate(var(--inX, 0px), var(--inY, -13.33px));
+    /*transform: translate(var(--inX, 0px), var(--inY, -13.33px));*/
+    /*filter: blur(2px);
+    font-size:90%;*/
     transform: translate(var(--inX, 0px), var(--inY, -20px));
   }
   100% {
@@ -60,6 +62,8 @@ body{
   }
   100% {
     opacity: 0;
+    /*filter: blur(2px);
+    font-size:110%;*/
     transform: translate(var(--outX, 0px), var(--outY, 20px));
   }
 }
