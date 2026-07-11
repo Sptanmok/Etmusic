@@ -233,7 +233,7 @@ function highlightWords(currentTime) {
     }
 }
 function changeTitle() {
-	if (document.hidden == true && audio.paused == false) {
+	if (document.hidden == true && audio.paused == false && jsonlyrics && !jsonlyrics.metadata.nolyric && currentLyricIndex !== -1) {
 		if(document.title !== jsonlyrics.lyrics[currentLyricIndex].text){
 			document.title = jsonlyrics.lyrics[currentLyricIndex].text;
 		}
@@ -263,7 +263,32 @@ function updateBarmove() {
         debug_ojb_b.textContent = "barmoveb: "+barmoveb;
     }
 }
+setInterval(updatasjArray);
+let oldsjdataArray;
+let sjdataArray;
+let jump_change;
+function updatasjArray(){
+    let audataArray = dataArray.slice(20,20+bufferLengthb+1);
+    if(!oldsjdataArray){
+        oldsjdataArray=audataArray
+    }
+    if(!sjdataArray){
+        sjdataArray=audataArray
+    }
+    for(let i=0;i<audataArray.length;i++){
+        if(audataArray[i]===0){
+            sjdataArray[i]=0;
+            continue;
+        }
+        const cha = audataArray[i] - oldsjdataArray[i];
+        sjdataArray[i]=Math.min(Math.max(cha+sjdataArray[i],0),300)
+    }
+    oldsjdataArray=audataArray
+    jump_change=true;
+}
 let oldwindowwidth = 0;
+let previousHeights = [];
+let previousHeightsB = [];
 function drawSpectrum() {
     if(oldwindowwidth !== window.innerWidth){
         oldwindowwidth = window.innerWidth
@@ -301,19 +326,15 @@ function drawSpectrum() {
   }
   function draw_a(){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    let barHeight;
     let x = 0;
 
     for (let i = 0; i < bufferLength; i++) {
-        barHeight = dataArray[i];
         ctx.fillStyle = "white";
-        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+        ctx.fillRect(x, canvas.height - dataArray[i], barWidth, dataArray[i]);
         x += barWidth + 1;
     }
   }
   function draw_b(){
-    let sjdataArray = dataArray.slice(20,20+bufferLengthb+1);
-    debug_ojb_c.textContent = "length: "+sjdataArray.length;
     /*
     for(let i=0;i<rawdataArray.length;i++){
         sjdataArray.push(rawdataArray[suijsz[i]])
@@ -333,16 +354,29 @@ function drawSpectrum() {
         }
     }
 
+    const frameHasNewData = jump_change;
+    jump_change = false;
+
     ctxb.clearRect(0, 0, canvasb.width, canvasb.height);
     ctxd.clearRect(0, 0, canvasd.width, canvasd.height);
     ctxb.fillStyle = "white";
-    //barmove loops between -73 and the window width
-    let barHeight;
     let x = 0;
     let yic_mun=0;
     const width = canvasb.width;
     for (let i = 0; i < sjdataArray.length; i++) {
-        barHeight = (sjdataArray[i]-min)/(max-min>0?max-min:1)*(canvasb.height-120);
+        let barHeight;
+        if(frameHasNewData){
+            barHeight = sjdataArray[i];
+        }else if(previousHeights[i] !== undefined){
+            if(previousHeights[i] > 50){
+                barHeight = previousHeights[i] - 2
+            }else{
+                barHeight = previousHeights[i] + 2
+            }
+        }else{
+            barHeight = 0;
+        }
+        previousHeights[i] = barHeight;
         ctxb.fillStyle = "white";
         if(x+barmove < width){
             ctxb.fillRect(x+barmove, 0, 60, barHeight);
@@ -365,7 +399,19 @@ function drawSpectrum() {
     x=0;
     yic_mun = 0;
     for (let i = sjdataArray.length-1; i >= 0; i--) {
-        barHeight = (sjdataArray[i]-min)/(max-min>0?max-min:1)*(canvasd.height-120);
+        let barHeight;
+        if(frameHasNewData){
+            barHeight = sjdataArray[i];
+        }else if(previousHeightsB[i] !== undefined){
+            if(previousHeightsB[i] > 50){
+                barHeight = previousHeightsB[i] - 2
+            }else{
+                barHeight = previousHeightsB[i] + 2
+            }
+        }else{
+            barHeight = 0;
+        }
+        previousHeightsB[i] = barHeight;
         ctxd.fillStyle = "white";
         if(x+barmoveb < width){
             ctxd.fillRect(barmoveb+x, canvasd.height - barHeight, 60, barHeight);
