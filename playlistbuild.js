@@ -334,71 +334,126 @@ async function YrcToJson(musicid, meta){
 let sade ='';
 let sadee ='';
 async function QQJsonGET(name,artist,album,yrcjson){
-    function QrcMatchingYrcTimelineOffset(qrcjson, yrcjson){
-        let matches = [];
-        for(let i=0;i<yrcjson.length;i++){
-            const liney = yrcjson[i];
-            if(!liney.text || liney.text.length < 2) continue;
-            let best_sim = 0;
-            let nq_i = -1;
-            for(let c=0;c<qrcjson.length;c++){
-                const lineq = qrcjson[c];
-                if(!lineq.text || lineq.text.length < 2) continue;
-                const sim = stringSimilarity(liney.text, lineq.text);
-                if(sim > best_sim){
-                    best_sim = sim;
-                    nq_i = c;
+    function QrcMatchingYrcTimelineOffset(qrcjson, yrcjson) {
+        // 1. 收集有效歌词行（文本长度≥2）
+        const yrcLines = yrcjson.filter(l => l.text && l.text.length >= 2);
+        const qrcLines = qrcjson.filter(l => l.text && l.text.length >= 2);
+        if (yrcLines.length === 0 || qrcLines.length === 0) return 0;
+
+        // 2. 为每一行 yrc 找到 qrc 中最佳匹配的行（相似度 > 0.5）
+        const rawMatches = [];
+        for (let i = 0; i < yrcLines.length; i++) {
+            const yLine = yrcLines[i];
+            let bestSim = 0;
+            let bestIdx = -1;
+            for (let j = 0; j < qrcLines.length; j++) {
+                const qLine = qrcLines[j];
+                const sim = stringSimilarity(yLine.text, qLine.text);
+                if (sim > bestSim) {
+                    bestSim = sim;
+                    bestIdx = j;
                 }
             }
-            if(best_sim > 0.5 && nq_i >= 0){
-                matches.push({
-                    sim: best_sim,
-                    offset: parseFloat((liney.time - qrcjson[nq_i].time).toFixed(2))
+            if (bestSim > 0.5) {
+                rawMatches.push({
+                    yIdx: i,
+                    qIdx: bestIdx,
+                    sim: bestSim,
+                    offset: parseFloat((yLine.time - qrcLines[bestIdx].time).toFixed(2))
                 });
             }
         }
-        if(matches.length < 3){
+
+        if (rawMatches.length < 3) {
             console.log("Not enough matches for offset");
             return 0;
         }
-        matches.sort((a, b) => b.sim - a.sim);
-        let top = matches.slice(0, Math.min(10, matches.length));
-        let offsets = top.map(m => m.offset);
-        offsets.sort((a, b) => a - b);
-        let median = offsets.length % 2
-            ? offsets[Math.floor(offsets.length/2)]
-            : (offsets[offsets.length/2 - 1] + offsets[offsets.length/2]) / 2;
-        let mean = offsets.reduce((s, v) => s + v, 0) / offsets.length;
-        let variance = offsets.reduce((s, v) => s + (v - mean) ** 2, 0) / offsets.length;
-        let stddev = Math.sqrt(variance);
-        if(stddev > 1.5){
-            console.log(`Offset unreliable (stddev=${stddev.toFixed(2)}, pairs=${matches.length}), skipping`);
+
+        // 3. 顺序约束：只保留使 qIdx 保持严格递增的匹配（贪心策略）
+        const orderedMatches = [];
+        let lastQIdx = -1;
+        for (const m of rawMatches) {
+            // 偏移量突然过大（>10秒）也视为不可靠，直接跳过
+            if (Math.abs(m.offset) > 10) continue;
+            if (m.qIdx > lastQIdx) {
+                orderedMatches.push(m);
+                lastQIdx = m.qIdx;
+            }
+            // 否则丢弃该匹配（可能为错行）
+        }
+
+        if (orderedMatches.length < 3) {
+            console.log("Not enough ordered matches for offset");
             return 0;
         }
-        let filtered = offsets.filter(v => Math.abs(v - median) <= stddev);
-        let finalOffset = filtered.reduce((s, v) => s + v, 0) / filtered.length;
-        console.log(`Offset: ${finalOffset.toFixed(2)}s (from ${filtered.length}/${matches.length} pairs)`);
+
+        // 4. 从有序匹配中提取偏移量，计算可靠偏移
+        // 取相似度最高的前10个（不足则全取）
+        orderedMatches.sort((a, b) => b.sim - a.sim);
+        const top = orderedMatches.slice(0, Math.min(10, orderedMatches.length));
+        let offsets = top.map(m => m.offset);
+        offsets.sort((a, b) => a - b);
+
+        // 中位数
+        const median = offsets.length % 2
+            ? offsets[Math.floor(offsets.length / 2)]
+            : (offsets[offsets.length / 2 - 1] + offsets[offsets.length / 2]) / 2;
+
+        // 均值和标准差
+        const mean = offsets.reduce((s, v) => s + v, 0) / offsets.length;
+        const variance = offsets.reduce((s, v) => s + (v - mean) ** 2, 0) / offsets.length;
+        const stddev = Math.sqrt(variance);
+
+        if (stddev > 3) {
+            console.log(`Offset unreliable (stddev=${stddev.toFixed(2)}, pairs=${orderedMatches.length}), skipping`);
+            return 0;
+        }
+
+        // 过滤偏离中位数超过 1 个标准差的点，取平均
+        const filtered = offsets.filter(v => Math.abs(v - median) <= stddev);
+        const finalOffset = filtered.reduce((s, v) => s + v, 0) / filtered.length;
+        console.log(`Offset: ${finalOffset.toFixed(2)}s (from ${filtered.length}/${orderedMatches.length} pairs)`);
         return parseFloat(finalOffset.toFixed(2));
     }
     //const datae = await axios.get(`${qqmusiclyric_api}?name=${encodeURIComponent(name.replace(/ - .*/, ''))}&artists=${encodeURIComponent(artist.replace(/\/.*/, ''))}&album=${encodeURIComponent(album)}&cid=${i}`)
-    let nme = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name.replace(/-.*$/, ''))}`,{validateStatus: function (status) {return (status==200)||(status==502)||(status==500);},headers: {'user-agent': user_agent_b},timeout: 10000})
-    while(!nme||nme.status!==200){
-        console.error("api.vkeys.cn Request failed_       sss")
-        await delay(1000);
-        nme = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name.replace(/-.*$/, ''))}`,{validateStatus: function (status) {return (status==200)||(status==502)||(status==500);},headers: {'user-agent': user_agent_b},timeout: 10000})
+    let list=[];
+    try{
+        const nme = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name.replace(/-.*$/, ''))}`)
+        if(!nme.data.data||!Array.isArray(nme.data.data)||nme.data.data.length === 0) {sadee = `${sadee}${name} - ${artist} ~ ${album}\n`;return};
+        list = nme.data.data;
+    }catch(err){
+        console.error("api.vkeys.cn Request failed:", err.message);
+    }
+    if(!list||!Array.isArray(list)){
+        //备用API
+        try{
+            const nme = await axios.get(`https://qq-music-api.office0520.workers.dev/api/search?keyword=${encodeURIComponent(name).replace(/-.*$/, '')}&type=song&num=10`)
+            if(!nme.data.data||!Array.isArray(nme.data.list)||nme.data.list.length === 0) {sadee = `${sadee}${name} - ${artist} ~ ${album}\n`;return};
+            for(let i=0;i<nme.data.list.length;i++){
+                const qqName = nme.data.list[i].name?nme.data.list[i].name:"";
+                const singer_list = nme.data.list[i].singer?nme.data.list[i].singer:"";
+                const qqAlbum = nme.data.list[i].album.length===0?nme.data.list[i].name:nme.data.list[i].album[0].name;
+                list.push({song:qqName,singer_list:singer_list,album:qqAlbum,id:nme.data.list[i].id,mid:nme.data.list[i].mid})
+            }
+        }catch(err){
+            console.error("qq-music-api.office0520.workers.dev Request failed:", err.message);
+        }
+    }
+    if(list.length===0){
+        console.error(`双api失效 ${name} - ${artist} ~ ${album}`);
     }
     let mi;
-    if(!nme.data.data||!Array.isArray(nme.data.data)||nme.data.data.length === 0) {sadee = `${sadee}${name} - ${artist} ~ ${album}\n`;return};
     let max=0;
     let index=-1;
-    for(let i=0;i<nme.data.data.length;i++){
-        const qqName = nme.data.data[i].song?nme.data.data[i].song:"";const qqArtist = nme.data.data[i].singer?nme.data.data[i].singer:"";const qqAlbum = nme.data.data[i].album?nme.data.data[i].album:"";
-        const qqList = qqArtist.replace(/\([^)]*\)/g, '').replace(/ /g, "").toUpperCase().split("/");
+    for(let i=0;i<list.length;i++){
+        const qqName = list[i].song?list[i].song:"";
+        const qqArtistList = list[i].singer?list[i].singer:"";
+        const qqAlbum = list[i].album?list[i].album:"";
         const wyList = artist.replace(/\([^)]*\)/g, '').replace(/ /g, "").toUpperCase().split("/");
         let a_aru = 0;
-        for (const qq of qqList) { 
+        for (const qq of qqArtistList) { 
             for (const wy of wyList) {
-                const sim = stringSimilarity(qq, wy);
+                const sim = stringSimilarity(qq.name.replace(/\([^)]*\)/g, '').replace(/ /g, "").toUpperCase(), wy);
                 if (sim > a_aru) {
                     a_aru = sim;
                 }
@@ -411,32 +466,39 @@ async function QQJsonGET(name,artist,album,yrcjson){
             index=i;
         }
     }
-    if(!nme.data.data[index]){
+    if(!list[index]){
         return {metadata:{zq:false,message:`未找到匹配的歌曲  .`}};
     }
-    const qqName = nme.data.data[index].song?nme.data.data[index].song:"";const qqArtist = nme.data.data[index].singer?nme.data.data[index].singer:"";const qqAlbum = nme.data.data[index].album?nme.data.data[index].album:"";
+    const qqName = list[index].song?list[index].song:"";const qqArtistList = list[index].singer_list?list[index].singer_list:"";const qqAlbum = list[index].album?list[index].album:"";
     if(max<1.7){//初音ミク的歌和我初音未来的歌有什么关系呢，就算专辑名一样罢了（x
-        return {metadata:{zq:false,message:`匹配度过低，放弃匹配。相似度：${max}。${qqName} - ${qqArtist} · ${qqAlbum}`}};
+        return {metadata:{zq:false,message:`匹配度过低，放弃匹配。相似度：${max}。${qqName} - ${JSON.stringify(qqArtistList)} · ${qqAlbum}`}};
     }else if(index===-1){
         return {metadata:{zq:false,message:`未找到匹配的歌曲.`}};
     }
-    let datae = await axios.get(`https://api.vkeys.cn/v2/music/tencent/lyric?id=${nme.data.data[index].id}`,{validateStatus: function (status) {return (status==200)||(status==502)||(status==500);},headers: {'user-agent': user_agent_b},timeout: 10000})//api有时会出现502错误
-    while(!datae||datae.status!==200){
-        console.error("api.vkeys.cn Request failed")
-        await delay(1000);
-        datae = await axios.get(`https://api.vkeys.cn/v2/music/tencent/lyric?id=${nme.data.data[index].id}`,{validateStatus: function (status) {return (status==200)||(status==502)||(status==500);},headers: {'user-agent': user_agent_b},timeout: 10000})
-        .catch(err => {
-        if (err.code === 'ECONNABORTED') {
-            console.error('api.vkeys.cn请求超时！');
-        }
-        });
-    }
-    if(!datae.data.data) return;
     let qrc={};
-    qrc.orig = datae.data.data.yrc
-    qrc.ts = datae.data.data.trans
-    qrc.roma = datae.data.data.roma
-    let qrcjson = QrcToJson(qrc,nme.data.data[0].id,0)
+    try{
+        const datae = await axios.get(`https://api.vkeys.cn/v2/music/tencent/lyric?id=${list[index].id}`)//api有时会出现502错误
+        if(!datae.data.data) return;
+        qrc.orig = datae.data.data.yrc
+        qrc.ts = datae.data.data.trans
+        qrc.roma = datae.data.data.roma
+    }catch(err){
+        console.error("api.vkeys.cn Request failed:", err.message);
+    }
+    if(qrc.orig===undefined&&qrc.ts===undefined&&qrc.roma===undefined){
+        try{
+            const datae = await axios.get(`https://qq-music-api.office0520.workers.dev/api/lyric?mid=${list[index].mid}&qrc=1&trans=1&roma=1`)
+            qrc.orig = datae.data.data.lyric.match(/LyricContent="([^"]*)"/)[1]
+            qrc.ts = datae.data.data.trans.match(/LyricContent="([^"]*)"/)[1]
+            qrc.roma = datae.data.data.roma.match(/LyricContent="([^"]*)"/)[1]
+        }catch(err){
+            console.error("qq-music-api.office0520.workers.dev Request failed:", err.message);
+        }
+    }
+    if(Object.keys(qrc).length === 0){
+        console.error(`双api失效 ${name} - ${artist} ~ ${album}`);
+    }
+    let qrcjson = QrcToJson(qrc,list[0].id,0)
     qrcjson = QrcOffset(qrcjson,QrcMatchingYrcTimelineOffset(yrcjson.lyrics,qrcjson.lyrics))
     if(qrcjson){
         return qrcjson
@@ -453,7 +515,7 @@ async function QQJsonGET(name,artist,album,yrcjson){
     return qrcjson
 }
 function QrcOffset(json,offset){
-    if(offset<3){
+    if(offset<1&&offset>-1){
         return json;
     }
     let qrc=json;
