@@ -193,12 +193,20 @@ async function downMusicFilePut(json,musicd){
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
-function filenamecl(name){
-    if(!name){
-        return '';
+function filenamecl(name) {
+    if (!name) return '';
+
+    // 1. 将可能引发问题的字符全部替换为下划线
+    let result = name
+        .replace(/[\\\/:*?"<>|#&+{}\[\]\^`~;=@$!,%]/g, '_') // 非法及特殊字符
+        .replace(/ /g, '_')                                 // 空格
+        .replace(/[\x00-\x1f\x7f]/g, '');                  // 删除控制字符
+
+    // 2. 长度截断（保留前5和后5字符，中间加省略号）
+    if (result.length > 30) {
+        result = result.slice(0, 5) + ' ··· ' + result.slice(-5);
     }
-    let result = name.replace(/\//g,",").replace(/\*/g,"x").replace(/\"/g,"'").replace(/\#/g,"").replace(/\>/g,"→").replace(/\</g,"←").replace(/\:/g,"%3A").replace(/\?/g,"%3F")//“#”是URL注释符，在此替换
-    if(result.length>30) result = result.slice(0,5-result.length)+" ··· "+result.slice(result.length-5)
+
     return result;
 }
 async function YrcToJson(musicid, meta){
@@ -461,7 +469,7 @@ async function QQJsonGET(name,artist,album,yrcjson){
         }
         const a_tiu = stringSimilarity(qqName.replace(/\([^)]*\)/g, '').replace(/-.*$/, '').replace(/ /g, "").toUpperCase(),name.replace(/\([^)]*\)/g, '').replace(/-.*$/, '').replace(/ /g, "").toUpperCase())
         const a_alu = album==name||qqName==qqAlbum?1:stringSimilarity(qqAlbum.replace(/\([^)]*\)/g, '').replace(/ /g, "").toUpperCase(),album.replace(/\([^)]*\)/g, '').replace(/ /g, "").toUpperCase())
-        if(a_tiu+a_aru+a_alu>max){
+        if(a_tiu+a_aru+a_alu>max+0.3){//max+3靠前搜索结果有特权
             max=a_tiu+a_aru+a_alu;
             index=i;
         }
