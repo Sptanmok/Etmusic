@@ -26,9 +26,17 @@ axiosRetry(axios, {
   retries: 3,
   retryDelay: axiosRetry.exponentialDelay,
   retryCondition: (error) => {
-    return axiosRetry.isNetworkOrIdempotentRequestError(error) ||
-           error.code === 'ECONNRESET' ||
-           error.message.includes('stream has been aborted');
+    // 原有条件
+    if (axiosRetry.isNetworkOrIdempotentRequestError(error) ||
+        error.code === 'ECONNRESET' ||
+        error.message.includes('stream has been aborted')) {
+      return true;
+    }
+    // 新增：当响应状态为 404 时也重试
+    if (error.response && error.response.status === 404) {
+      return true;
+    }
+    return false;
   }
 });
 if (!fs.existsSync("dist")) fs.mkdirSync("dist", { recursive: true });
@@ -389,11 +397,18 @@ async function QQJsonGET(name,artist,album,yrcjson){
         return parseFloat(finalOffset.toFixed(2));
     }
     //const datae = await axios.get(`${qqmusiclyric_api}?name=${encodeURIComponent(name.replace(/ - .*/, ''))}&artists=${encodeURIComponent(artist.replace(/\/.*/, ''))}&album=${encodeURIComponent(album)}&cid=${i}`)
-    let nme = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name.replace(/-.*$/, ''))}`,{validateStatus: function (status) {return (status==200)||(status==502)||(status==500);},headers: {'user-agent': user_agent_b},timeout: 10000})
-    while(!nme||nme.status!==200){
-        console.error("api.vkeys.cn Request failed_       sss")
-        await delay(1000);
-        nme = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name.replace(/-.*$/, ''))}`,{validateStatus: function (status) {return (status==200)||(status==502)||(status==500);},headers: {'user-agent': user_agent_b},timeout: 10000})
+    let nme;
+    /*
+    try{
+        nme = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name.replace(/-.*$/, ''))}%20${encodeURIComponent(artist)}`)
+    }catch{
+        console.log("qqmusicsearchapi失效")
+    }
+    */
+    try{
+        nme = await axios.get(`http://192.168.1.9:3000/search?keyword=${encodeURIComponent(name.replace(/-.*$/, ''))}%20${encodeURIComponent(artist)}&limit=20`)
+    }catch{
+        console.log("qqmusicsearch备用api失效")
     }
     let mi;
     if(!nme.data.data||!Array.isArray(nme.data.data)||nme.data.data.length === 0) {sadee = `${sadee}${name} - ${artist} ~ ${album}\n`;return};
@@ -428,16 +443,19 @@ async function QQJsonGET(name,artist,album,yrcjson){
     }else if(index===-1){
         return {metadata:{zq:false,message:`未找到匹配的歌曲.`}};
     }
-    let datae = await axios.get(`https://api.vkeys.cn/v2/music/tencent/lyric?id=${nme.data.data[index].id}`,{validateStatus: function (status) {return (status==200)||(status==502)||(status==500);},headers: {'user-agent': user_agent_b},timeout: 10000})//api有时会出现502错误
-    while(!datae||datae.status!==200){
-        console.error("api.vkeys.cn Request failed")
-        await delay(1000);
-        datae = await axios.get(`https://api.vkeys.cn/v2/music/tencent/lyric?id=${nme.data.data[index].id}`,{validateStatus: function (status) {return (status==200)||(status==502)||(status==500);},headers: {'user-agent': user_agent_b},timeout: 10000})
-        .catch(err => {
-        if (err.code === 'ECONNABORTED') {
-            console.error('api.vkeys.cn请求超时！');
-        }
-        });
+    let datae;
+    /*
+    try{
+        datae = await axios.get(`https://api.vkeys.cn/v2/music/tencent/lyric?id=${nme.data.data[index].id}`)//api有时会出现502错误
+    }catch{
+        console.log("qqmusiclyricapi失效")
+    }
+    */
+    try{
+        datae = await axios.get(`http://192.168.1.9:3000/lyric?id=${nme.data.data[index].mid}&qrc=1`)
+    }catch{
+        console.log("qqmusiclyric备用api失效")
+        return
     }
     if(!datae.data.data) return;
     let qrc={};
