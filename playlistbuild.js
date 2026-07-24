@@ -12,7 +12,7 @@ const qqmusiclyric_api ='http://38.76.201.17:5000/'
 const qqyuan = true;//我们联合起来！r
 const yuming ='https://mrachritmo.emnasop.cn/'
 const indexpage_max = 500;//每页歌曲数量，过大可能导致部分手机浏览器无法打开
-const async_max = 1;//让暴风雨来得更猛烈些吧！
+const async_max = 3;//让暴风雨来得更猛烈些吧！
 const async_downfile_max = 1;
 const musicnum_max = 10000;
 const user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36"
@@ -230,7 +230,7 @@ async function YrcToJson(musicid, meta){
             let pairlyrics = yrc.tlyric.lyric.split("\n").filter(item => timeTagRegex.test(item));
             if(yrc.ytlrc&&yrc.ytlrc.lyric){
                 pairlyrics = yrc.ytlrc.lyric.split("\n").filter(item => timeTagRegex.test(item));
-                min_pairtime = 0.01;
+                min_pairtime = 0.0001;
             }
             for(let i = 0; i < pairlyrics.length; i++){
                 let lyricMatch = pairlyrics[i].match(timeTagRegex);
@@ -238,9 +238,9 @@ async function YrcToJson(musicid, meta){
                 let text = lyricMatch[4]
                 const decimal = lyricMatch[3] ? (lyricMatch[3].toString().length === 2 ? parseInt(lyricMatch[3]) / 100 : parseInt(lyricMatch[3]) / 1000) : 0;
                 let timesecp = parseInt(lyricMatch[1]) * 60 + parseInt(lyricMatch[2]) + decimal
-               if(min_pairtime > Math.abs(timesec - timesecp)){
-                        min_pairtime = Math.abs(timesec - timesecp);
-                        pairtext = text.replace('//', '');
+                if(min_pairtime > Math.abs(timesec - timesecp)){
+                    min_pairtime = Math.abs(timesec - timesecp);
+                    pairtext = text.replace('//', '');
                 }
             }
             pairif = true;
@@ -250,7 +250,7 @@ async function YrcToJson(musicid, meta){
             let romalyrics = yrc.romalrc.lyric.split("\n").filter(item => timeTagRegex.test(item));
             if(yrc.yromalrc&&yrc.yromalrc.lyric){
                 romalyrics = yrc.yromalrc.lyric.split("\n").filter(item => timeTagRegex.test(item));
-                min_romatime = 0.01;
+                min_romatime = 0.0001;
             }
             for(let i = 0; i < romalyrics.length; i++){
                 let lyricMatch = romalyrics[i].match(timeTagRegex);
@@ -415,20 +415,27 @@ async function QQJsonGET(name,artist,album,yrcjson){
     //const datae = await axios.get(`${qqmusiclyric_api}?name=${encodeURIComponent(name.replace(/ - .*/, ''))}&artists=${encodeURIComponent(artist.replace(/\/.*/, ''))}&album=${encodeURIComponent(album)}&cid=${i}`)
     let nme;
     try{
-        nme = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name.replace(/-.*$/, ''))}%20${encodeURIComponent(artist.replace(/\/[^/]*$/, ""))}`,{headers: {'user-agent': user_agent_b}})
+        nme = await axios.get(`https://qqmusic.emnasop.cn/search?keyword=${encodeURIComponent(name.replace(/-.*$/, ''))}%20${encodeURIComponent(artist.replace(/\/[^/]*$/, ""))}&limit=5`)
     }catch{
         console.log("qqmusicsearchapi失效")
     }
-    try{
-        nme = await axios.get(`http://192.168.1.9:3000/search?keyword=${encodeURIComponent(name.replace(/-.*$/, ''))}%20${encodeURIComponent(artist.replace(/\/[^/]*$/, ""))}&limit=20`)
-    }catch{
-        console.log("qqmusicsearch备用api失效")
+    if(!nme||nme.status!==200){
+        try{
+            nme = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name.replace(/-.*$/, ''))}%20${encodeURIComponent(artist.replace(/\/[^/]*$/, ""))}`,{headers: {'user-agent': user_agent_b}})
+        }catch{
+            console.log("qqmusicsearch备用api失效")
+            return;
+        }
     }
     let mi;
-    if(!nme.data.data||!Array.isArray(nme.data.data)||nme.data.data.length === 0) {sadee = `${sadee}${name} - ${artist} ~ ${album}\n`;return};
+    if(!nme.data.data||!Array.isArray(nme.data.data)||nme.data.data.length === 0) {sadee = `${sadee}${name} - ${artist} ~ ${album}\n`;return {metadata:{zq:false,message:`NSA  .`}}};
     let index=-1;
     let search_arr = [];
     for(let i=0;i<nme.data.data.length;i++){
+        /*
+        此过滤的目的是寻找歌曲及其不同版本，而不是完全相同的，因为wyy和qq哪怕歌曲名字、艺人名字、专辑名字都相同，歌曲时间轴也可能完全不同
+        这只能通过下面的时间轴匹配来确定更好的版本，哪怕不是同一个人唱的
+        */
         const qqName = nme.data.data[i].song?nme.data.data[i].song:"";const qqArtist = nme.data.data[i].singer?nme.data.data[i].singer:"";const qqAlbum = nme.data.data[i].album?nme.data.data[i].album:"";
         const qqList = qqArtist.replace(/\([^)]*\)/g, '').replace(/ /g, "").toUpperCase().split("/");
         const wyList = artist.replace(/\([^)]*\)/g, '').replace(/ /g, "").toUpperCase().split("/");
@@ -441,28 +448,40 @@ async function QQJsonGET(name,artist,album,yrcjson){
                 }
             }
         }
-        const a_tiu = stringSimilarity(qqName.replace(/\([^)]*\)/g, '').replace(/-.*$/, '').replace(/ /g, "").toUpperCase(),name.replace(/\([^)]*\)/g, '').replace(/-.*$/, '').replace(/ /g, "").toUpperCase())
+        const a_tiu = Math.max(
+            stringSimilarity(qqName.replace(/\([^)]*\)/g, '').replace(/\[[^)]*\]/g,"").replace(/-.*$/, '').replace(/ /g, "").toUpperCase(),name.replace(/\([^)]*\)/g, '').replace(/\[[^)]*\]/g,"").replace(/-.*$/, '').replace(/ /g, "").toUpperCase()),
+            stringSimilarity(qqName.replace(/\[[^)]*\]/g,"").replace(/-.*$/, '').replace(/ /g, "").toUpperCase(),name.replace(/\[[^)]*\]/g,"").replace(/-.*$/, '').replace(/ /g, "").toUpperCase())
+        )
         const a_alu = stringSimilarity(qqAlbum.replace(/\([^)]*\)/g, '').replace(/ /g, "").toUpperCase(),album.replace(/\([^)]*\)/g, '').replace(/ /g, "").toUpperCase())
-        if(a_tiu+a_aru+a_alu>2){
+        if(a_tiu>0.6&&(a_aru>0.4||a_alu>0.4)){
             search_arr.push(nme.data.data[i])
         }
     }
+    /*
+    const filter_search_arr=search_arr.filter(obj => {
+        return obj.song!==obj.album;
+    });
+    if(name!==album&&filter_search_arr){
+        search_arr=filter_search_arr
+    }*/
     if(search_arr.length===0){
-        return {metadata:{zq:false,message:`未找到匹配的歌曲  .`}};
+        return {metadata:{zq:false,message:`未找到匹配的歌曲 。`}};
     }
     let max_matches_num=0
     let datae;
     let qrcjson;
     for(let i=0;i<search_arr.length;i++){
         try{
-            datae = await axios.get(`https://api.vkeys.cn/v2/music/tencent/lyric?id=${search_arr[i].id}`)//api有时会出现502错误
+            datae = await axios.get(`https://qqmusic.emnasop.cn/lyric?id=${search_arr[i].mid}&qrc=1`,{validateStatus: function (status) {return (status==200)||(status==404);},headers: {'user-agent': user_agent_b}})
         }catch{
             console.log("qqmusiclyricapi失效")
         }
-        try{
-            datae = await axios.get(`http://192.168.1.9:3000/lyric?id=${search_arr[i].mid}&qrc=1`,{validateStatus: function (status) {return (status==200)||(status==404);},headers: {'user-agent': user_agent_b}})
-        }catch{
-            console.log("qqmusiclyric备用api失效")
+        if(!datae||datae!==200){
+            try{
+                datae = await axios.get(`https://api.vkeys.cn/v2/music/tencent/lyric?id=${search_arr[i].id}`)//api有时会出现502错误
+            }catch{
+                console.log("qqmusiclyric备用api失效")
+            }
         }
         if(datae.status!==200) continue;
         if(!datae.data.data) continue;
@@ -472,14 +491,16 @@ async function QQJsonGET(name,artist,album,yrcjson){
         qrc.roma = datae.data.data.roma
         const json = QrcToJson(qrc,search_arr[i].id,0)
         const matches_num=QrcMatchingYrcTimeline(json.lyrics,yrcjson.lyrics)
-        if(matches_num>max_matches_num){
+        search_arr[i].matches_num=matches_num//debug
+        if(matches_num>=max_matches_num){
             max_matches_num=matches_num
             qrcjson=json
         }
     }
     if(!qrcjson){
-        return {metadata:{zq:false,message:`歌曲无歌词  .`}};
+        return {metadata:{zq:false,message:`歌曲无歌词  .`,search_arr}};
     }
+    qrcjson.metadata.search_arr = search_arr//debug
     qrcjson = QrcOffset(qrcjson,QrcMatchingYrcTimelineOffset(yrcjson.lyrics,qrcjson.lyrics))
     if(qrcjson){
         return qrcjson
@@ -552,7 +573,7 @@ function QrcToJson(qrcd,id, apinu){
             for(let i = 0; i < romalyrics.length; i++){
                 let lyricMatch = romalyrics[i].match(zqTagRegex);
                 if(!lyricMatch) continue;
-                let text = lyricMatch[3].replace(/\([^)]*\)/g, '')
+                let text = lyricMatch[3].replace(/\((\d+),(\d+)\)/g, '')
                 let timesecp = parseInt(lyricMatch[1])/1000
                 if(min_romatime > Math.abs(timesec - timesecp)){
                     min_romatime = Math.abs(timesec - timesecp);
