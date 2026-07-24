@@ -18,6 +18,7 @@ const musicnum_max = 10000;
 const user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36"
 //const user_agent_b = "Sent by the https://github.com/Sptanmok/Mrachritmo project, thanks for your service!"
 const user_agent_b = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36"
+const trytoqqlyric = true;
 const jymaster = true;
 let no_wyy = 0;
 let sesc_ppe = 0;
@@ -108,7 +109,7 @@ async function jxgd(listd){
         if(qqyuan){
         //替补
             let jsonq;
-            if(!json.metadata.zq){
+            if(trytoqqlyric||!json.metadata.zq){
                 no_wyy++;
                 jsonq= await QQJsonGET(json.metadata.ti,json.metadata.ar,json.metadata.al,json);
                 if(jsonq && jsonq.metadata.zq){
@@ -350,6 +351,21 @@ async function YrcToJson(musicid, meta){
 let sade ='';
 let sadee ='';
 async function QQJsonGET(name,artist,album,yrcjson){
+    function QrcMatchingYrcTimeline(qrcjson, yrcjson){
+        let Num_matches = 0;
+        for(const liney of yrcjson){
+            for(const lineq of qrcjson){
+                if(Math.abs(liney.time - lineq.time) < 0.5){
+                    Num_matches++;
+                    break;
+                }
+                if(lineq.time > liney.time){
+                    break;
+                }
+            }
+        }
+        return Num_matches;
+    }
     function QrcMatchingYrcTimelineOffset(qrcjson, yrcjson){
         let matches = [];
         for(let i=0;i<yrcjson.length;i++){
@@ -398,22 +414,20 @@ async function QQJsonGET(name,artist,album,yrcjson){
     }
     //const datae = await axios.get(`${qqmusiclyric_api}?name=${encodeURIComponent(name.replace(/ - .*/, ''))}&artists=${encodeURIComponent(artist.replace(/\/.*/, ''))}&album=${encodeURIComponent(album)}&cid=${i}`)
     let nme;
-    /*
     try{
-        nme = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name.replace(/-.*$/, ''))}%20${encodeURIComponent(artist)}`)
+        nme = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name.replace(/-.*$/, ''))}%20${encodeURIComponent(artist.replace(/\/[^/]*$/, ""))}`,{headers: {'user-agent': user_agent_b}})
     }catch{
         console.log("qqmusicsearchapi失效")
     }
-    */
     try{
-        nme = await axios.get(`http://192.168.1.9:3000/search?keyword=${encodeURIComponent(name.replace(/-.*$/, ''))}%20${encodeURIComponent(artist)}&limit=20`)
+        nme = await axios.get(`http://192.168.1.9:3000/search?keyword=${encodeURIComponent(name.replace(/-.*$/, ''))}%20${encodeURIComponent(artist.replace(/\/[^/]*$/, ""))}&limit=20`)
     }catch{
         console.log("qqmusicsearch备用api失效")
     }
     let mi;
     if(!nme.data.data||!Array.isArray(nme.data.data)||nme.data.data.length === 0) {sadee = `${sadee}${name} - ${artist} ~ ${album}\n`;return};
-    let max=0;
     let index=-1;
+    let search_arr = [];
     for(let i=0;i<nme.data.data.length;i++){
         const qqName = nme.data.data[i].song?nme.data.data[i].song:"";const qqArtist = nme.data.data[i].singer?nme.data.data[i].singer:"";const qqAlbum = nme.data.data[i].album?nme.data.data[i].album:"";
         const qqList = qqArtist.replace(/\([^)]*\)/g, '').replace(/ /g, "").toUpperCase().split("/");
@@ -428,41 +442,44 @@ async function QQJsonGET(name,artist,album,yrcjson){
             }
         }
         const a_tiu = stringSimilarity(qqName.replace(/\([^)]*\)/g, '').replace(/-.*$/, '').replace(/ /g, "").toUpperCase(),name.replace(/\([^)]*\)/g, '').replace(/-.*$/, '').replace(/ /g, "").toUpperCase())
-        const a_alu = album==name||qqName==qqAlbum?1:stringSimilarity(qqAlbum.replace(/\([^)]*\)/g, '').replace(/ /g, "").toUpperCase(),album.replace(/\([^)]*\)/g, '').replace(/ /g, "").toUpperCase())
-        if(a_tiu+a_aru+a_alu>max+0.3){//max+3靠前搜索结果有特权
-            max=a_tiu+a_aru+a_alu;
-            index=i;
+        const a_alu = stringSimilarity(qqAlbum.replace(/\([^)]*\)/g, '').replace(/ /g, "").toUpperCase(),album.replace(/\([^)]*\)/g, '').replace(/ /g, "").toUpperCase())
+        if(a_tiu+a_aru+a_alu>2){
+            search_arr.push(nme.data.data[i])
         }
     }
-    if(!nme.data.data[index]){
+    if(search_arr.length===0){
         return {metadata:{zq:false,message:`未找到匹配的歌曲  .`}};
     }
-    const qqName = nme.data.data[index].song?nme.data.data[index].song:"";const qqArtist = nme.data.data[index].singer?nme.data.data[index].singer:"";const qqAlbum = nme.data.data[index].album?nme.data.data[index].album:"";
-    if(max<1.7){//初音ミク的歌和我初音未来的歌有什么关系呢，就算专辑名一样罢了（x
-        return {metadata:{zq:false,message:`匹配度过低，放弃匹配。相似度：${max}。${qqName} - ${qqArtist} · ${qqAlbum}`}};
-    }else if(index===-1){
-        return {metadata:{zq:false,message:`未找到匹配的歌曲.`}};
-    }
+    let max_matches_num=0
     let datae;
-    /*
-    try{
-        datae = await axios.get(`https://api.vkeys.cn/v2/music/tencent/lyric?id=${nme.data.data[index].id}`)//api有时会出现502错误
-    }catch{
-        console.log("qqmusiclyricapi失效")
+    let qrcjson;
+    for(let i=0;i<search_arr.length;i++){
+        try{
+            datae = await axios.get(`https://api.vkeys.cn/v2/music/tencent/lyric?id=${search_arr[i].id}`)//api有时会出现502错误
+        }catch{
+            console.log("qqmusiclyricapi失效")
+        }
+        try{
+            datae = await axios.get(`http://192.168.1.9:3000/lyric?id=${search_arr[i].mid}&qrc=1`,{validateStatus: function (status) {return (status==200)||(status==404);},headers: {'user-agent': user_agent_b}})
+        }catch{
+            console.log("qqmusiclyric备用api失效")
+        }
+        if(datae.status!==200) continue;
+        if(!datae.data.data) continue;
+        let qrc={};
+        qrc.orig = datae.data.data.yrc
+        qrc.ts = datae.data.data.trans
+        qrc.roma = datae.data.data.roma
+        const json = QrcToJson(qrc,search_arr[i].id,0)
+        const matches_num=QrcMatchingYrcTimeline(json.lyrics,yrcjson.lyrics)
+        if(matches_num>max_matches_num){
+            max_matches_num=matches_num
+            qrcjson=json
+        }
     }
-    */
-    try{
-        datae = await axios.get(`http://192.168.1.9:3000/lyric?id=${nme.data.data[index].mid}&qrc=1`)
-    }catch{
-        console.log("qqmusiclyric备用api失效")
-        return
+    if(!qrcjson){
+        return {metadata:{zq:false,message:`歌曲无歌词  .`}};
     }
-    if(!datae.data.data) return;
-    let qrc={};
-    qrc.orig = datae.data.data.yrc
-    qrc.ts = datae.data.data.trans
-    qrc.roma = datae.data.data.roma
-    let qrcjson = QrcToJson(qrc,nme.data.data[0].id,0)
     qrcjson = QrcOffset(qrcjson,QrcMatchingYrcTimelineOffset(yrcjson.lyrics,qrcjson.lyrics))
     if(qrcjson){
         return qrcjson
