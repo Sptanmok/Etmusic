@@ -3,23 +3,25 @@ import fs from "fs";
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
 import * as cheerio from 'cheerio';
+import path from 'path';
 //import { console } from "inspector";
 //喵喵喵！
 //await fs.promises.rm('dist', { recursive: true, force: true });
 const metingapi_url='https://api.qijieya.cn/meting/'//好人一生平安！
 //const metingapi_url='https://api.injahow.cn/meting/'//好人一生平安！
 const qqmusiclyric_api ='http://38.76.201.17:5000/'
+const qqmusic_api ="http://127.0.0.1:3000"
 const qqyuan = true;//我们联合起来！r
 const yuming ='https://mrachritmo.emnasop.cn/'
 const indexpage_max = 500;//每页歌曲数量，过大可能导致部分手机浏览器无法打开
-const async_max = 3;//让暴风雨来得更猛烈些吧！
+const async_max = 2;//让暴风雨来得更猛烈些吧！
 const async_downfile_max = 1;
 const musicnum_max = 10000;
 const user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36"
 //const user_agent_b = "Sent by the https://github.com/Sptanmok/Mrachritmo project, thanks for your service!"
 const user_agent_b = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36"
 const trytoqqlyric = true;
-const jymaster = true;
+const jymaster = false;
 let no_wyy = 0;
 let sesc_ppe = 0;
 //↑↑↑配置处↑↑↑
@@ -197,10 +199,36 @@ async function downMusicFilePut(json,musicd){
             fs.writeFileSync(`./dist/musicfile/${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}.flac`,music.data)
         }
     }
+    const filePath = `./dist/musicfile/${filenamecl_old(json.metadata.ti)} - ${filenamecl_old(json.metadata.ar)} · ${filenamecl_old(json.metadata.al)}.flac`
+    if(filePath!==`./dist/musicfile/${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}.flac`){
+        fs.access(filePath, fs.constants.F_OK, (err) => {
+            if (err) {
+                console.error(`文件不存在: ${filePath}`);
+                return;
+            }
+
+            // 异步删除文件
+            fs.unlink(filePath, (err) => {
+                if (err) {
+                    console.error(`删除文件失败: ${err.message}`);
+                    return;
+                }
+                console.log(`文件已删除: ${filePath}`);
+            });
+        });
+    }
     async_downfile--;
 }
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+function filenamecl_old(name){
+    if(!name){
+        return '';
+    }
+    let result = name.replace(/\//g,",").replace(/\*/g,"x").replace(/\"/g,"'").replace(/\#/g,"").replace(/\>/g,"→").replace(/\</g,"←").replace(/\:/g,"%3A").replace(/\?/g,"%3F")//“#”是URL注释符，在此替换
+    if(result.length>30) result = result.slice(0,5-result.length)+" ··· "+result.slice(result.length-5)
+    return result;
 }
 function filenamecl(name) {
     if (!name) return '';
@@ -413,30 +441,37 @@ async function QQJsonGET(name,artist,album,yrcjson){
         return parseFloat(finalOffset.toFixed(2));
     }
     //const datae = await axios.get(`${qqmusiclyric_api}?name=${encodeURIComponent(name.replace(/ - .*/, ''))}&artists=${encodeURIComponent(artist.replace(/\/.*/, ''))}&album=${encodeURIComponent(album)}&cid=${i}`)
-    let nme;
+    let all_search_arr=[]
     try{
-        nme = await axios.get(`https://qqmusic.emnasop.cn/search?keyword=${encodeURIComponent(name.replace(/-.*$/, ''))}%20${encodeURIComponent(artist.replace(/\/[^/]*$/, ""))}&limit=5`)
+        const nme = await axios.get(`${qqmusic_api}/search?keyword=${encodeURIComponent(name.replace(/-.*$/, '').replace(/【[^】]*】/g,""))}%20${encodeURIComponent(artist)}&limit=10`)
+        const nmen = await axios.get(`${qqmusic_api}/search?keyword=${encodeURIComponent(name.replace(/-.*$/, '').replace(/【[^】]*】/g,""))}&limit=10`)
+        all_search_arr=nme.data.data.concat(nmen.data.data).filter((item, index, self) =>self.findIndex(t => t.id === item.id) === index)
     }catch{
         console.log("qqmusicsearchapi失效")
     }
-    if(!nme||nme.status!==200){
+    if(all_search_arr.length===0){
         try{
-            nme = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name.replace(/-.*$/, ''))}%20${encodeURIComponent(artist.replace(/\/[^/]*$/, ""))}`,{headers: {'user-agent': user_agent_b}})
+            const nme = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name.replace(/-.*$/, '').replace(/【[^】]*】/g,""))}%20${encodeURIComponent(artist)}`,{headers: {'user-agent': user_agent_b}})
+            const nmen = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name.replace(/-.*$/, '').replace(/【[^】]*】/g,""))}`,{headers: {'user-agent': user_agent_b}})
+            all_search_arr=nme.data.data.concat(nmen.data.data).filter((item, index, self) =>self.findIndex(t => t.id === item.id) === index)
         }catch{
             console.log("qqmusicsearch备用api失效")
             return;
         }
     }
     let mi;
-    if(!nme.data.data||!Array.isArray(nme.data.data)||nme.data.data.length === 0) {sadee = `${sadee}${name} - ${artist} ~ ${album}\n`;return {metadata:{zq:false,message:`NSA  .`}}};
+    if(all_search_arr.length === 0) {sadee = `${sadee}${name} - ${artist} ~ ${album}\n`;return {metadata:{zq:false,message:`NSA  .`}}};
     let index=-1;
     let search_arr = [];
-    for(let i=0;i<nme.data.data.length;i++){
+    let fail_arr= [];
+    for(let i=0;i<all_search_arr.length;i++){
         /*
         此过滤的目的是寻找歌曲及其不同版本，而不是完全相同的，因为wyy和qq哪怕歌曲名字、艺人名字、专辑名字都相同，歌曲时间轴也可能完全不同
-        这只能通过下面的时间轴匹配来确定更好的版本，哪怕不是同一个人唱的
+        (可能原因是音源不同，导致歌曲开始时间不同，例如网易云的某些歌曲一开始有留白，qq则没有)
+        这只能通过下面的时间轴匹配来确定更好的版本，哪怕不是同一个人唱的（例如wyy是初音唱，qq上没有初音唱的版本或者音源有较大差异，则用重音的翻唱版本歌词代替一下，效果也差不多x）
+        保证最佳的逐词源供应
         */
-        const qqName = nme.data.data[i].song?nme.data.data[i].song:"";const qqArtist = nme.data.data[i].singer?nme.data.data[i].singer:"";const qqAlbum = nme.data.data[i].album?nme.data.data[i].album:"";
+        const qqName = all_search_arr[i].song?all_search_arr[i].song:"";const qqArtist = all_search_arr[i].singer?all_search_arr[i].singer:"";const qqAlbum = all_search_arr[i].album?all_search_arr[i].album:"";
         const qqList = qqArtist.replace(/\([^)]*\)/g, '').replace(/ /g, "").toUpperCase().split("/");
         const wyList = artist.replace(/\([^)]*\)/g, '').replace(/ /g, "").toUpperCase().split("/");
         let a_aru = 0;
@@ -449,14 +484,21 @@ async function QQJsonGET(name,artist,album,yrcjson){
             }
         }
         const a_tiu = Math.max(
-            stringSimilarity(qqName.replace(/\([^)]*\)/g, '').replace(/\[[^)]*\]/g,"").replace(/-.*$/, '').replace(/ /g, "").toUpperCase(),name.replace(/\([^)]*\)/g, '').replace(/\[[^)]*\]/g,"").replace(/-.*$/, '').replace(/ /g, "").toUpperCase()),
-            stringSimilarity(qqName.replace(/\[[^)]*\]/g,"").replace(/-.*$/, '').replace(/ /g, "").toUpperCase(),name.replace(/\[[^)]*\]/g,"").replace(/-.*$/, '').replace(/ /g, "").toUpperCase())
+            stringSimilarity(qqName.replace(/\([^)]*\)/g, '').replace(/【[^】]*】/g,"").replace(/\[[^)]*\]/g,"").replace(/-.*$/, '').replace(/ /g, "").toUpperCase(),name.replace(/\([^)]*\)/g, '').replace(/【[^】]*】/g,"").replace(/\[[^)]*\]/g,"").replace(/-.*$/, '').replace(/ /g, "").toUpperCase()),
+            stringSimilarity(qqName.replace(/\[[^)]*\]/g,"").replace(/【[^】]*】/g,"").replace(/-.*$/, '').replace(/ /g, "").toUpperCase(),name.replace(/\[[^)]*\]/g,"").replace(/【[^】]*】/g,"").replace(/-.*$/, '').replace(/ /g, "").toUpperCase())
         )
         const a_alu = stringSimilarity(qqAlbum.replace(/\([^)]*\)/g, '').replace(/ /g, "").toUpperCase(),album.replace(/\([^)]*\)/g, '').replace(/ /g, "").toUpperCase())
-        if(a_tiu>0.6&&(a_aru>0.4||a_alu>0.4)){
-            search_arr.push(nme.data.data[i])
+        if(a_tiu>0.6&&(a_aru+a_alu>0.9||(a_aru>0.7&&(album===name||qqName===qqAlbum)))){
+            let ojb =all_search_arr[i];
+            ojb.taa_ppl=stringSimilarity(qqName,name)+stringSimilarity(qqArtist,artist)+stringSimilarity(qqAlbum,album)
+            search_arr.push(all_search_arr[i])
+        }else{//debug
+            let ojb =all_search_arr[i]
+            ojb.message=`${a_tiu}、${a_aru}、${a_alu}`
+            fail_arr.push(ojb)
         }
     }
+    search_arr.sort((a, b) => b.taa_ppl - a.taa_ppl)
     /*
     const filter_search_arr=search_arr.filter(obj => {
         return obj.song!==obj.album;
@@ -465,20 +507,25 @@ async function QQJsonGET(name,artist,album,yrcjson){
         search_arr=filter_search_arr
     }*/
     if(search_arr.length===0){
-        return {metadata:{zq:false,message:`未找到匹配的歌曲 。`}};
+        return {metadata:{zq:false,message:`未找到匹配的歌曲 。`,fail_arr}};
     }
+    let wyylyricstext="";
+    for(const ajson of yrcjson.lyrics){
+        wyylyricstext+=ajson.text
+    }
+
     let max_matches_num=0
     let datae;
     let qrcjson;
     for(let i=0;i<search_arr.length;i++){
         try{
-            datae = await axios.get(`https://qqmusic.emnasop.cn/lyric?id=${search_arr[i].mid}&qrc=1`,{validateStatus: function (status) {return (status==200)||(status==404);},headers: {'user-agent': user_agent_b}})
+            datae = await axios.get(`${qqmusic_api}/lyric?id=${search_arr[i].mid}&qrc=1`,{validateStatus: function (status) {return (status==200)||(status==404);},headers: {'user-agent': user_agent_b}})
         }catch{
             console.log("qqmusiclyricapi失效")
         }
-        if(!datae||datae!==200){
+        if(!datae||datae.status!==200||datae.data.yrc){
             try{
-                datae = await axios.get(`https://api.vkeys.cn/v2/music/tencent/lyric?id=${search_arr[i].id}`)//api有时会出现502错误
+                datae = await axios.get(`https://api.vkeys.cn/v2/music/tencent/lyric?id=${search_arr[i].id}`,{validateStatus: function (status) {return (status==200)||(status==404);}})//api有时会出现502错误
             }catch{
                 console.log("qqmusiclyric备用api失效")
             }
@@ -490,17 +537,24 @@ async function QQJsonGET(name,artist,album,yrcjson){
         qrc.ts = datae.data.data.trans
         qrc.roma = datae.data.data.roma
         const json = QrcToJson(qrc,search_arr[i].id,0)
+        let qqlyricstext="";
+        for(const ajson of json.lyrics){
+            qqlyricstext+=ajson.text
+        }
+        const lyrics_text_matches=stringSimilarity(wyylyricstext,qqlyricstext)
         const matches_num=QrcMatchingYrcTimeline(json.lyrics,yrcjson.lyrics)
         search_arr[i].matches_num=matches_num//debug
-        if(matches_num>=max_matches_num){
+        search_arr[i].lyrics_text_matches=lyrics_text_matches
+        if(matches_num>=max_matches_num+7&&lyrics_text_matches>0.4){
             max_matches_num=matches_num
             qrcjson=json
         }
     }
     if(!qrcjson){
-        return {metadata:{zq:false,message:`歌曲无歌词  .`,search_arr}};
+        return {metadata:{zq:false,message:`歌曲无歌词  .`,search_arr,fail_arr}};
     }
     qrcjson.metadata.search_arr = search_arr//debug
+    qrcjson.metadata.fail_arr = fail_arr//debug
     qrcjson = QrcOffset(qrcjson,QrcMatchingYrcTimelineOffset(yrcjson.lyrics,qrcjson.lyrics))
     if(qrcjson){
         return qrcjson
