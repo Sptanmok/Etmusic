@@ -297,24 +297,22 @@ function changeTitle() {
 }
 //频谱条
 const barWidth = (canvas.width / bufferLength) * 2.5;
+const mode2BarWidth = 60;
+const mode2MinimumAdvance = 73;
 let oldAudioVisualizationModeSelection;
-let startmove = 0;
-let barmove = startmove;
-let barmoveb = window.innerWidth;
+let barmove = 0;
 let debug_ojb_a = document.getElementById('a');
 let debug_ojb_b = document.getElementById('b');
 let debug_ojb_c = document.getElementById('c');
 setInterval(updateBarmove,20);
 function updateBarmove() {
     barmove++;
-    barmoveb--;
     if(barmove >= canvasb.width){
-        barmove = startmove;
-        barmoveb = window.innerWidth;
+        barmove = 0;
     }
-    if(true){//debug
+    if(debug_ojb_a && debug_ojb_b){//debug
         debug_ojb_a.textContent = "barmove: "+barmove;
-        debug_ojb_b.textContent = "barmoveb: "+barmoveb;
+        debug_ojb_b.textContent = "barmoveb: "+(canvasb.width-barmove);
     }
 }
 setInterval(updatasjArray);
@@ -322,12 +320,12 @@ let oldsjdataArray;
 let sjdataArray;
 let jump_change;
 function updatasjArray(){
-    let audataArray = dataArray.slice(20,20+bufferLengthb+1);
-    if(!oldsjdataArray){
-        oldsjdataArray=audataArray
+    let audataArray = dataArray.slice(20,20+bufferLengthb);
+    if(!oldsjdataArray || oldsjdataArray.length !== audataArray.length){
+        oldsjdataArray=audataArray.slice()
     }
-    if(!sjdataArray){
-        sjdataArray=audataArray
+    if(!sjdataArray || sjdataArray.length !== audataArray.length){
+        sjdataArray=audataArray.slice()
     }
     for(let i=0;i<audataArray.length;i++){
         if(audataArray[i]===0){
@@ -348,9 +346,9 @@ function drawSpectrum() {
         oldwindowwidth = window.innerWidth
         canvas.width = main.clientWidth - 40;
         bufferLength = Math.floor( (canvas.width + 1 ) / (barWidth + 1) );
-        bufferLengthb = (Math.ceil(canvasb.width / 73)+1)*2;
         canvasb.width = window.innerWidth;
         canvasd.width = window.innerWidth;
+        bufferLengthb = Math.max(1, Math.floor(canvasb.width / mode2MinimumAdvance));
         suijsz=[];
         for(let i=1;i<=bufferLengthb;i++){
             suijsz.push(i)
@@ -394,9 +392,11 @@ function drawSpectrum() {
         sjdataArray.push(rawdataArray[suijsz[i]])
     }
     */
-    bufferLengthb = (Math.ceil(canvasb.width / 73)+1)*2;
-    startmove = window.innerWidth-bufferLengthb/2*73
-    console.log(startmove+"  "+barmove)
+    const width = canvasb.width;
+    bufferLengthb = Math.max(1, Math.floor(width / mode2MinimumAdvance));
+    const barAdvance = width / bufferLengthb;
+    const phase = barmove % barAdvance;
+    const completedSlots = Math.floor(barmove / barAdvance);
     let max = -Infinity;
     let min = Infinity;
     for(let i = 0;i < sjdataArray.length;i++){
@@ -414,13 +414,12 @@ function drawSpectrum() {
     ctxb.clearRect(0, 0, canvasb.width, canvasb.height);
     ctxd.clearRect(0, 0, canvasd.width, canvasd.height);
     ctxb.fillStyle = "white";
-    let x = 0;
-    let yic_mun=0;
-    const width = canvasb.width;
-    for (let i = 0; i < sjdataArray.length; i++) {
+    const topHeights = [];
+    const bottomHeights = [];
+    for (let i = 0; i < bufferLengthb; i++) {
         let barHeight;
         if(frameHasNewData){
-            barHeight = sjdataArray[i];
+            barHeight = sjdataArray[i] || 0;
         }else if(previousHeights[i] !== undefined){
             if(previousHeights[i] > 50){
                 barHeight = previousHeights[i] - 2
@@ -431,59 +430,55 @@ function drawSpectrum() {
             barHeight = 0;
         }
         previousHeights[i] = barHeight;
-        ctxb.fillStyle = "white";
-        if(x+barmove < width){
-            ctxb.fillRect(x+barmove, 0, 60, barHeight);
-            ctxb.beginPath();
-            ctxb.arc(x+barmove+30, barHeight, 30, 0, 2 * Math.PI, false);
-            ctxb.fill();
-        }
-        if(x+barmove >= width){
-            yic_mun++;
-            ctxb.fillRect((x+barmove)-(width+73), 0, 60, barHeight);
-            ctxb.beginPath();
-            ctxb.arc((x+barmove)-(width+73)+30, barHeight, 30, 0, 2 * Math.PI, false);
-            ctxb.fill();
-        }
-        ctxb.fillStyle = "black";
-        ctxb.font = "48px serif";
-        ctxb.fillText(i, barmove+x<width?barmove+x:(x+barmove)-(width+73), 50);
-        x += 73;
-    }
-    x=0;
-    yic_mun = 0;
-    for (let i = sjdataArray.length-1; i >= 0; i--) {
-        let barHeight;
+        topHeights[i] = barHeight;
+
         if(frameHasNewData){
-            barHeight = sjdataArray[i];
+            barHeight = sjdataArray[i] || 0;
         }else if(previousHeightsB[i] !== undefined){
-            if(previousHeightsB[i] > 50){
-                barHeight = previousHeightsB[i] - 2
-            }else{
-                barHeight = previousHeightsB[i] + 2
-            }
+            barHeight = previousHeightsB[i] > 50
+                ? previousHeightsB[i] - 2
+                : previousHeightsB[i] + 2;
         }else{
             barHeight = 0;
         }
         previousHeightsB[i] = barHeight;
+        bottomHeights[i] = barHeight;
+    }
+
+    function drawTopBar(barX, barHeight, label){
+        ctxb.fillStyle = "white";
+        ctxb.fillRect(barX, 0, mode2BarWidth, barHeight);
+        ctxb.beginPath();
+        ctxb.arc(barX + mode2BarWidth / 2, barHeight, mode2BarWidth / 2, 0, 2 * Math.PI, false);
+        ctxb.fill();
+        ctxb.fillStyle = "black";
+        ctxb.font = "48px serif";
+        ctxb.fillText(label, barX, 50);
+    }
+
+    function drawBottomBar(barX, barHeight, label){
         ctxd.fillStyle = "white";
-        if(x+barmoveb < width){
-            ctxd.fillRect(barmoveb+x, canvasd.height - barHeight, 60, barHeight);
-            ctxd.beginPath()
-            ctxd.arc(barmoveb+x+30, canvasd.height - barHeight, 30, 0, 2 * Math.PI, true);
-            ctxd.fill();
-        }
-        if(x+barmoveb >= width){
-            yic_mun++;
-            ctxd.fillRect((x+barmoveb)-(width+73), canvasd.height - barHeight, 60, barHeight);
-            ctxd.beginPath();
-            ctxd.arc((x+barmoveb)-(width+73)+30, canvasd.height - barHeight, 30, 0, 2 * Math.PI, true);
-            ctxd.fill();
-        }
+        ctxd.fillRect(barX, canvasd.height - barHeight, mode2BarWidth, barHeight);
+        ctxd.beginPath();
+        ctxd.arc(barX + mode2BarWidth / 2, canvasd.height - barHeight, mode2BarWidth / 2, 0, 2 * Math.PI, true);
+        ctxd.fill();
         ctxd.fillStyle = "black";
         ctxd.font = "48px serif";
-        ctxd.fillText(i, barmoveb+x<width?barmoveb+x:(x+barmoveb)-(width+73), canvasd.height - 10);
-        x += 73;
+        ctxd.fillText(label, barX, canvasd.height - 10);
+    }
+
+    // Use an exact circular track: barAdvance * bufferLengthb === width.
+    // completedSlots shifts the data identity as each spacing is crossed;
+    // without it the positions loop correctly but every numbered bar appears
+    // to jump back to its original slot instead of travelling across the row.
+    for (let slot = -1; slot < bufferLengthb; slot++) {
+        const dataIndex = (slot - completedSlots + bufferLengthb * 2) % bufferLengthb;
+        drawTopBar(slot * barAdvance + phase, topHeights[dataIndex], dataIndex);
+    }
+    for (let slot = 0; slot <= bufferLengthb; slot++) {
+        const logicalSlot = (slot + completedSlots) % bufferLengthb;
+        const dataIndex = bufferLengthb - 1 - logicalSlot;
+        drawBottomBar(slot * barAdvance - phase, bottomHeights[dataIndex], dataIndex);
     }
 
   }
@@ -492,7 +487,7 @@ function drawSpectrum() {
 canvas.width = main.clientWidth - 40;
 canvasb.width = window.innerWidth;
 canvasd.width = window.innerWidth;
-let bufferLengthb = (Math.ceil(canvasb.width / 73)+1)*2;
+let bufferLengthb = Math.max(1, Math.floor(canvasb.width / mode2MinimumAdvance));
 bufferLength = Math.floor( (canvas.width + 1 ) / (barWidth + 1) );
 audio.onplay = () => {
   audioContext.resume().then(() => {
