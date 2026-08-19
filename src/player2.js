@@ -1,5 +1,31 @@
 const audio = document.getElementById('audio');
 
+// Low-latency bridge to the desktop lyrics overlay.
+let lyricsBridge;
+let lyricsBridgeRetry;
+const bridgeUrl = 'ws://127.0.0.1:17321';
+const bridgeTitle = () => (jsonlyrics && jsonlyrics.metadata && jsonlyrics.metadata.ti) || document.title || audio.getAttribute('src') || '';
+const sendLyricsState = () => {
+  if (!lyricsBridge || lyricsBridge.readyState !== WebSocket.OPEN) return;
+  lyricsBridge.send(JSON.stringify({
+    title: bridgeTitle(),
+    artist: jsonlyrics && jsonlyrics.metadata ? jsonlyrics.metadata.ar || '' : '',
+    position: Number.isFinite(audio.currentTime) ? audio.currentTime : 0,
+    duration: Number.isFinite(audio.duration) ? audio.duration : 0,
+    status: audio.paused ? 'Paused' : 'Playing'
+  }));
+};
+const connectLyricsBridge = () => {
+  try {
+    lyricsBridge = new WebSocket(bridgeUrl);
+    lyricsBridge.addEventListener('open', sendLyricsState);
+    lyricsBridge.addEventListener('close', () => { clearTimeout(lyricsBridgeRetry); lyricsBridgeRetry = setTimeout(connectLyricsBridge, 1000); });
+    lyricsBridge.addEventListener('error', () => lyricsBridge.close());
+  } catch { lyricsBridgeRetry = setTimeout(connectLyricsBridge, 1000); }
+};
+connectLyricsBridge();
+setInterval(sendLyricsState, 40);
+
 // Custom media controls. The native audio chrome differs between
 // browsers, so keep the media element accessible but render our own controls.
 audio.controls = false;
@@ -51,7 +77,7 @@ seekSlider.addEventListener('input', () => {
   updateSeekFill();
 });
 volumeSlider.addEventListener('input', () => { audio.volume = volumeSlider.value; volumeSlider.style.setProperty('--volume-progress', `${volumeSlider.value * 100}%`); });
-['loadedmetadata', 'durationchange', 'timeupdate', 'play', 'pause', 'ended'].forEach(event => audio.addEventListener(event, syncControls));
+['loadedmetadata', 'durationchange', 'timeupdate', 'play', 'pause', 'ended'].forEach(event => audio.addEventListener(event, () => { syncControls(); sendLyricsState(); }));
 syncControls();
 let lyricpath;
 let currentLyricIndex = -1;
