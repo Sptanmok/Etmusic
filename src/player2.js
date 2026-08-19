@@ -1,5 +1,4 @@
 const audio = document.getElementById('audio');
-
 // Low-latency bridge to the desktop lyrics overlay.
 let lyricsBridge;
 let lyricsBridgeRetry;
@@ -25,60 +24,6 @@ const connectLyricsBridge = () => {
 };
 connectLyricsBridge();
 setInterval(sendLyricsState, 40);
-
-// Custom media controls. The native audio chrome differs between
-// browsers, so keep the media element accessible but render our own controls.
-audio.controls = false;
-audio.classList.add('audio-source');
-const player = audio.closest('.player') || audio.parentElement;
-const controls = document.createElement('div');
-controls.className = 'music-controls';
-controls.setAttribute('aria-label', 'Music player controls');
-controls.innerHTML = `
-  <div class="progress-row">
-    <span class="time-label current-time">0:00</span>
-    <input class="seek-slider" type="range" min="0" max="100" value="0" step="0.1" aria-label="Seek">
-    <span class="time-label duration-label">0:00</span>
-  </div>
-  <div class="control-actions">
-    <button class="control-button skip-button" data-seconds="-10" aria-label="Back 10 seconds">↶<small>10</small></button>
-    <button class="control-button play-button" aria-label="Play">▶</button>
-    <button class="control-button skip-button" data-seconds="10" aria-label="Forward 10 seconds">↷<small>10</small></button>
-    <label class="volume-control" aria-label="Volume"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.1-3.8v7.6a4.5 4.5 0 0 0 2.1-3.8zm0-8.2v2.1a7.5 7.5 0 0 1 0 12.2v2.1a9.5 9.5 0 0 0 0-16.4z"/></svg><input class="volume-slider" type="range" min="0" max="1" value="1" step="0.01"></label>
-  </div>`;
-audio.insertAdjacentElement('afterend', controls);
-const playButton = controls.querySelector('.play-button');
-const seekSlider = controls.querySelector('.seek-slider');
-const volumeSlider = controls.querySelector('.volume-slider');
-const currentTimeLabel = controls.querySelector('.current-time');
-const durationLabel = controls.querySelector('.duration-label');
-const formatTime = seconds => {
-  if (!Number.isFinite(seconds)) return '0:00';
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60).toString().padStart(2, '0');
-  return `${mins}:${secs}`;
-};
-const updateSeekFill = () => seekSlider.style.setProperty('--seek-progress', `${seekSlider.value}%`);
-const syncControls = () => {
-  const progress = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
-  seekSlider.value = progress;
-  updateSeekFill();
-  currentTimeLabel.textContent = formatTime(audio.currentTime);
-  durationLabel.textContent = formatTime(audio.duration);
-  playButton.textContent = audio.paused ? '▶' : 'Ⅱ';
-  playButton.setAttribute('aria-label', audio.paused ? 'Play' : 'Pause');
-};
-playButton.addEventListener('click', () => audio.paused ? audio.play() : audio.pause());
-controls.querySelectorAll('.skip-button').forEach(button => button.addEventListener('click', () => {
-  audio.currentTime = Math.max(0, Math.min(audio.duration || Infinity, audio.currentTime + Number(button.dataset.seconds)));
-}));
-seekSlider.addEventListener('input', () => {
-  if (audio.duration) audio.currentTime = (Number(seekSlider.value) / 100) * audio.duration;
-  updateSeekFill();
-});
-volumeSlider.addEventListener('input', () => { audio.volume = volumeSlider.value; volumeSlider.style.setProperty('--volume-progress', `${volumeSlider.value * 100}%`); });
-['loadedmetadata', 'durationchange', 'timeupdate', 'play', 'pause', 'ended'].forEach(event => audio.addEventListener(event, () => { syncControls(); sendLyricsState(); }));
-syncControls();
 let lyricpath;
 let currentLyricIndex = -1;
 let wordElements = [];
