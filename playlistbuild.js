@@ -10,18 +10,19 @@ import path from 'path';
 const metingapi_url='https://api.qijieya.cn/meting/'//好人一生平安！
 //const metingapi_url='https://api.injahow.cn/meting/'//好人一生平安！
 const qqmusiclyric_api ='http://38.76.201.17:5000/'
-const qqmusic_api ="http://qqmusic.emnasop.cn"
+const qqmusic_api ="http://127.0.0.1:3030"
 const qqyuan = true;//我们联合起来！r
 const yuming ='https://mrachritmo.emnasop.cn/'
 const indexpage_max = 500;//每页歌曲数量，过大可能导致部分手机浏览器无法打开
-const async_max = 2;//让暴风雨来得更猛烈些吧！
-const async_downfile_max = 1;
+const async_max = 4;//让暴风雨来得更猛烈些吧！
+const async_downfile_max = 2;
 const musicnum_max = 10000;
 const user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36"
 //const user_agent_b = "Sent by the https://github.com/Sptanmok/Mrachritmo project, thanks for your service!"
 const user_agent_b = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36"
 const trytoqqlyric = true;
 const jymaster = false;
+const qqmusic_timeout = 15000;
 let no_wyy = 0;
 let sesc_ppe = 0;
 //↑↑↑配置处↑↑↑
@@ -443,23 +444,44 @@ async function QQJsonGET(name,artist,album,yrcjson){
         return parseFloat(finalOffset.toFixed(2));
     }
     //const datae = await axios.get(`${qqmusiclyric_api}?name=${encodeURIComponent(name.replace(/ - .*/, ''))}&artists=${encodeURIComponent(artist.replace(/\/.*/, ''))}&album=${encodeURIComponent(album)}&cid=${i}`)
-    let all_search_arr=[]
-    try{
-        const nme = await axios.get(`${qqmusic_api}/search?keyword=${encodeURIComponent(name.replace(/-.*$/, '').replace(/\([^)]*\)/g, '').replace(/【[^】]*】/g,""))}%20${encodeURIComponent(artist)}&limit=10`)
-        const nmen = await axios.get(`${qqmusic_api}/search?keyword=${encodeURIComponent(name.replace(/-.*$/, '').replace(/\([^)]*\)/g, '').replace(/【[^】]*】/g,""))}&limit=10`)
-        all_search_arr=nme.data.data.concat(nmen.data.data).filter((item, index, self) =>self.findIndex(t => t.id === item.id) === index)
-    }catch{
-        console.log("qqmusicsearchapi失效")
-    }
-    if(all_search_arr.length===0){
-        try{
-            const nme = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name.replace(/-.*$/, '').replace(/\([^)]*\)/g, '').replace(/【[^】]*】/g,""))}%20${encodeURIComponent(artist)}`,{headers: {'user-agent': user_agent_b}})
-            const nmen = await axios.get(`https://api.vkeys.cn/v2/music/tencent/search/song?word=${encodeURIComponent(name.replace(/-.*$/, '').replace(/\([^)]*\)/g, '').replace(/【[^】]*】/g,""))}`,{headers: {'user-agent': user_agent_b}})
-            all_search_arr=nme.data.data.concat(nmen.data.data).filter((item, index, self) =>self.findIndex(t => t.id === item.id) === index)
-        }catch{
-            console.log("qqmusicsearch备用api失效")
-            return;
+    const cleanName = name.replace(/-.*$/, '').replace(/\([^)]*\)/g, '').replace(/【[^】]*】/g, "");
+    const searchKeywords = [`${cleanName} ${artist}`.trim(), cleanName].filter((value, index, list) => value && list.indexOf(value) === index);
+    let all_search_arr = [];
+    // Retry an empty local response once before moving to the external fallback.
+    for (let attempt = 0; attempt < 2 && all_search_arr.length === 0; attempt++) {
+        const localSearches = await Promise.allSettled(searchKeywords.map((keyword) =>
+            axios.get(`${qqmusic_api}/search`, {
+                params: { keyword, limit: 10 },
+                timeout: qqmusic_timeout,
+                validateStatus: (status) => status >= 200 && status < 300,
+                headers: { 'user-agent': user_agent_b }
+            })
+        ));
+        for (const result of localSearches) {
+            const rows = result.status === 'fulfilled' && Array.isArray(result.value.data?.data)
+                ? result.value.data.data
+                : [];
+            all_search_arr.push(...rows);
         }
+        if (all_search_arr.length === 0 && attempt === 0) await delay(250);
+    }
+    all_search_arr = all_search_arr.filter((item, index, self) => item && self.findIndex((t) => t.id === item.id) === index);
+    if(all_search_arr.length===0){
+        const backupSearches = await Promise.allSettled(searchKeywords.map((keyword) =>
+            axios.get('https://api.vkeys.cn/v2/music/tencent/search/song', {
+                params: { word: keyword },
+                timeout: qqmusic_timeout,
+                validateStatus: (status) => status >= 200 && status < 300,
+                headers: { 'user-agent': user_agent_b }
+            })
+        ));
+        for (const result of backupSearches) {
+            const rows = result.status === 'fulfilled' && Array.isArray(result.value.data?.data)
+                ? result.value.data.data
+                : [];
+            all_search_arr.push(...rows);
+        }
+        all_search_arr = all_search_arr.filter((item, index, self) => item && self.findIndex((t) => t.id === item.id) === index);
     }
     let mi;
     if(all_search_arr.length === 0) {sadee = `${sadee}${name} - ${artist} ~ ${album}\n`;return {metadata:{zq:false,message:`NSA  .`}}};
@@ -520,20 +542,21 @@ async function QQJsonGET(name,artist,album,yrcjson){
     let datae;
     let qrcjson;
     for(let i=0;i<search_arr.length;i++){
+        datae = null;
         try{
-            datae = await axios.get(`${qqmusic_api}/lyric?id=${search_arr[i].mid}&qrc=1`,{validateStatus: function (status) {return (status==200)||(status==404);},headers: {'user-agent': user_agent_b}})
+            datae = await axios.get(`${qqmusic_api}/lyric`, { params: { id: search_arr[i].mid, qrc: 1 }, timeout: qqmusic_timeout, validateStatus: (status) => status === 200 || status === 404, headers: { 'user-agent': user_agent_b } });
         }catch{
-            console.log("qqmusiclyricapi失效")
+            datae = null;
         }
-        if(!datae||datae.status!==200||datae.data.yrc){
+        // A local response containing yrc is valid; only fall back when it is absent.
+        if(!datae || datae.status !== 200 || !datae.data?.data?.yrc){
             try{
-                datae = await axios.get(`https://api.vkeys.cn/v2/music/tencent/lyric?id=${search_arr[i].id}`,{validateStatus: function (status) {return (status==200)||(status==404);}})//api有时会出现502错误
+                datae = await axios.get('https://api.vkeys.cn/v2/music/tencent/lyric', { params: { id: search_arr[i].id }, timeout: qqmusic_timeout, validateStatus: (status) => status === 200 || status === 404 });
             }catch{
-                console.log("qqmusiclyric备用api失效")
+                datae = null;
             }
         }
-        if(datae.status!==200) continue;
-        if(!datae.data.data) continue;
+        if(!datae || datae.status !== 200 || !datae.data?.data) continue;
         let qrc={};
         qrc.orig = datae.data.data.yrc
         qrc.ts = datae.data.data.trans
