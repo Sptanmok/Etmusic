@@ -6,6 +6,7 @@ const pairLyricElement = document.getElementById('pairlyric');
 const romaLyricElement = document.getElementById('romalyric');
 const title = document.title
 let jsonlyrics;
+let sendLyricsBridgeState = () => {};
 let alimg = document.querySelector(".img");
 const canvas = document.getElementById('spectrum');
 const canvasb = document.getElementById('spectrumb');
@@ -82,31 +83,38 @@ function initLyrics() {
     let lyricsBridgeRetry;
     const bridgeUrl = 'ws://127.0.0.1:17321';
     const bridgeTitle = () => (jsonlyrics && jsonlyrics.metadata && jsonlyrics.metadata.ti) || document.title || audio.getAttribute('src') || '';
-    const sendLyricsState = () => {
+    const sendLyricsState = (includeLyrics = false) => {
         if (!lyricsBridge || lyricsBridge.readyState !== WebSocket.OPEN) return;
-        lyricsBridge.send(JSON.stringify({
+        const state = {
+            title: bridgeTitle(),
+            artist: jsonlyrics && jsonlyrics.metadata ? jsonlyrics.metadata.ar || '' : '',
             duration: Number.isFinite(audio.duration) ? audio.duration : 0,
-            status: audio.paused ? 'Paused' : 'Playing'
-        }));
+            position: Number.isFinite(audio.currentTime) ? audio.currentTime : 0,
+            status: audio.paused ? 'Paused' : 'Playing',
+            mode: LiteralRenderingModeSelection
+        };
+        if (includeLyrics) state.lyric = jsonlyrics || null;
+        try {
+            lyricsBridge.send(JSON.stringify(state));
+        } catch {
+            // The page can be backgrounded while the bridge reconnects.
+        }
     };
+    sendLyricsBridgeState = sendLyricsState;
     const connectLyricsBridge = () => {
         try {
             lyricsBridge = new WebSocket(bridgeUrl);
-            lyricsBridge.addEventListener('open', sendLyricsState);
+            lyricsBridge.addEventListener('open', () => sendLyricsState(true));
             lyricsBridge.addEventListener('close', () => { clearTimeout(lyricsBridgeRetry); lyricsBridgeRetry = setTimeout(connectLyricsBridge, 1000); });
             lyricsBridge.addEventListener('error', () => lyricsBridge.close());
         } catch { lyricsBridgeRetry = setTimeout(connectLyricsBridge, 1000); }
-        lyricsBridge.send(JSON.stringify({
-            title: bridgeTitle(),
-            artist: jsonlyrics && jsonlyrics.metadata ? jsonlyrics.metadata.ar || '' : '',
-            position: Number.isFinite(audio.currentTime) ? audio.currentTime : 0,
-            duration: Number.isFinite(audio.duration) ? audio.duration : 0,
-            status: audio.paused ? 'Paused' : 'Playing',
-            lyric: jsonlyrics || null
-        }));
     };
     connectLyricsBridge();
     setInterval(sendLyricsState, 40);
+    ['play', 'pause', 'seeked', 'loadedmetadata', 'durationchange', 'timeupdate', 'ended'].forEach(eventName => {
+        audio.addEventListener(eventName, () => sendLyricsState());
+    });
+    document.addEventListener('visibilitychange', () => sendLyricsState());
 }
 let zt = 1;
 function updateLyrics() {
@@ -478,6 +486,7 @@ document.addEventListener('keydown', function(event) {
    }else if(event.key === 't' && LiteralRenderingModeSelection >= LiteralRenderingModeSelectionall) {
 	   LiteralRenderingModeSelection = 1;
    }
+   if (event.key === 't') sendLyricsBridgeState();
    if (event.key === 'y' && AudioVisualizationModeSelection < AudioVisualizationModeSelectionall) {
        AudioVisualizationModeSelection++;
    }else if(event.key === 'y' && AudioVisualizationModeSelection >= AudioVisualizationModeSelectionall) {
