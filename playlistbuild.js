@@ -445,7 +445,7 @@ async function QQJsonGET(name,artist,album,yrcjson){
     }
     //const datae = await axios.get(`${qqmusiclyric_api}?name=${encodeURIComponent(name.replace(/ - .*/, ''))}&artists=${encodeURIComponent(artist.replace(/\/.*/, ''))}&album=${encodeURIComponent(album)}&cid=${i}`)
     const cleanName = name.replace(/-.*$/, '').replace(/\([^)]*\)/g, '').replace(/【[^】]*】/g, "");
-    const searchKeywords = [`${cleanName} ${artist}`.trim(), cleanName].filter((value, index, list) => value && list.indexOf(value) === index);
+    const searchKeywords = [`${cleanName} - ${artist}`.trim(), cleanName].filter((value, index, list) => value && list.indexOf(value) === index);
     let all_search_arr = [];
     // Retry an empty local response once before moving to the external fallback.
     for (let attempt = 0; attempt < 2 && all_search_arr.length === 0; attempt++) {
@@ -488,6 +488,9 @@ async function QQJsonGET(name,artist,album,yrcjson){
     let index=-1;
     let search_arr = [];
     let fail_arr= [];
+    if(all_search_arr.length===0){
+        return {metadata:{zq:false,message:`未找到歌词  .`}};
+    }
     for(let i=0;i<all_search_arr.length;i++){
         /*
         此过滤的目的是寻找歌曲及其不同版本，而不是完全相同的，因为wyy和qq哪怕歌曲名字、艺人名字、专辑名字都相同，歌曲时间轴也可能完全不同
@@ -531,7 +534,7 @@ async function QQJsonGET(name,artist,album,yrcjson){
         search_arr=filter_search_arr
     }*/
     if(search_arr.length===0){
-        return {metadata:{zq:false,message:`未找到匹配的歌曲 。`,fail_arr}};
+        search_arr.push(all_search_arr[0]);//保底
     }
     let wyylyricstext="";
     for(const ajson of yrcjson.lyrics){
@@ -566,7 +569,7 @@ async function QQJsonGET(name,artist,album,yrcjson){
         for(const ajson of json.lyrics){
             qqlyricstext+=ajson.text
         }
-        const lyrics_text_matches=stringSimilarity(wyylyricstext,qqlyricstext)
+        const lyrics_text_matches=lyricsSimilarity(wyylyricstext,qqlyricstext)
         const matches_num=QrcMatchingYrcTimeline(json.lyrics,yrcjson.lyrics)
         search_arr[i].matches_num=matches_num//debug
         search_arr[i].lyrics_text_matches=lyrics_text_matches
@@ -777,33 +780,165 @@ axiosRetry(axios, {
   shouldResetTimeout: true
 });
 */
-function stringSimilarity(a, b) {
-    const strA = a == null ? '' : String(a);
-    const strB = b == null ? '' : String(b);
-    const lenA = strA.length, lenB = strB.length;
-    // 空串情况
-    if (lenA === 0 && lenB === 0) return 1;
-    if (lenA === 0 || lenB === 0) return 0;
+function stringSimilarity(str1, str2, options = {}) {
+    // 输入归一化
+    const s1 = str1 == null ? '' : String(str1);
+    const s2 = str2 == null ? '' : String(str2);
 
-    // 前一行的编辑距离数组，初始为0..lenB
-    let prev = Array.from({ length: lenB + 1 }, (_, i) => i);
-    let curr = new Array(lenB + 1);
+    // 完全相等时直接返回 1
+    if (s1 === s2) return 1;
 
-    for (let i = 1; i <= lenA; i++) {
-        curr[0] = i; // 第一列值 = i（删除a的字符数）
-        for (let j = 1; j <= lenB; j++) {
-            const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-            // 插入、删除、替换的最小代价
-            curr[j] = Math.min(
-                curr[j - 1] + 1,   // 插入
-                prev[j] + 1,       // 删除
-                prev[j - 1] + cost // 替换
-            );
+    // 空串快速处理
+    if (s1.length === 0 || s2.length === 0) return 0;
+
+    // 转为字符数组，正确处理 Unicode 字符（如 emoji）
+    const a = Array.from(s1);
+    const b = Array.from(s2);
+    const len1 = a.length;
+    const len2 = b.length;
+
+    // 匹配窗口：max(0, floor(max(len1, len2) / 2) - 1)
+    const matchWindow = Math.max(0, Math.floor(Math.max(len1, len2) / 2) - 1);
+
+    const matches1 = new Array(len1).fill(false);
+    const matches2 = new Array(len2).fill(false);
+
+    let matches = 0;
+
+    // 第一步：找出所有匹配字符
+    for (let i = 0; i < len1; i++) {
+        const start = Math.max(0, i - matchWindow);
+        const end = Math.min(i + matchWindow + 1, len2);
+
+        for (let j = start; j < end; j++) {
+            if (!matches2[j] && a[i] === b[j]) {
+                matches1[i] = true;
+                matches2[j] = true;
+                matches++;
+                break;
+            }
         }
-        // 交换当前行与前行，复用数组
-        [prev, curr] = [curr, prev];
     }
 
-    const distance = prev[lenB]; // 最终编辑距离
-    return 1 - distance / Math.max(lenA, lenB);
+    // 无匹配字符时相似度为 0
+    if (matches === 0) return 0;
+
+    // 第二步：计算换位数（transpositions）
+    const matchedChars1 = [];
+    const matchedChars2 = [];
+
+    for (let i = 0; i < len1; i++) {
+        if (matches1[i]) matchedChars1.push(a[i]);
+    }
+    for (let j = 0; j < len2; j++) {
+        if (matches2[j]) matchedChars2.push(b[j]);
+    }
+
+    let transpositions = 0;
+    for (let k = 0; k < matchedChars1.length; k++) {
+        if (matchedChars1[k] !== matchedChars2[k]) {
+            transpositions++;
+        }
+    }
+    transpositions /= 2;
+
+    // 第三步：计算 Jaro 相似度
+    const jaro = (
+        matches / len1 +
+        matches / len2 +
+        (matches - transpositions) / matches
+    ) / 3;
+
+    // 第四步：Jaro-Winkler 前缀奖励
+    const scalingFactor = options.scalingFactor !== undefined ? options.scalingFactor : 0.1;
+    const maxPrefixLength = options.prefixLength !== undefined ? options.prefixLength : 4;
+    const prefixLimit = Math.min(maxPrefixLength, len1, len2);
+
+    let commonPrefix = 0;
+    for (let i = 0; i < prefixLimit; i++) {
+        if (a[i] === b[i]) {
+            commonPrefix++;
+        } else {
+            break;
+        }
+    }
+
+    const jaroWinkler = jaro + commonPrefix * scalingFactor * (1 - jaro);
+
+    // 确保结果不超过 1
+    return Math.min(1, jaroWinkler);
+}
+function lyricsSimilarity(lyricsA, lyricsB, options = {}) {
+    const n = options.n || 3;
+    const useLogTF = !!options.useLogTF;
+
+    // 1. 预处理：转为字符串、统一小写、去除非字母数字和中文的字符
+    const clean = (text) => {
+        if (text == null) return '';
+        return String(text)
+            .toLowerCase()
+            .replace(/[^\w\u4e00-\u9fff]/g, ''); // 保留字母、数字、下划线及基本汉字
+    };
+
+    const a = clean(lyricsA);
+    const b = clean(lyricsB);
+
+    // 空串处理
+    if (a.length === 0 && b.length === 0) return 1;
+    if (a.length === 0 || b.length === 0) return 0;
+
+    // 2. 生成 n-gram 频率 Map
+    const getNgrams = (str) => {
+        const map = new Map();
+        const len = str.length;
+
+        if (len < n) {
+            // 若字符串过短，退化为单字符 n-gram
+            for (const ch of str) {
+                map.set(ch, (map.get(ch) || 0) + 1);
+            }
+        } else {
+            for (let i = 0; i <= len - n; i++) {
+                const gram = str.slice(i, i + n);
+                map.set(gram, (map.get(gram) || 0) + 1);
+            }
+        }
+
+        // 可选：对数词频，压缩高频 n-gram 的影响
+        if (useLogTF) {
+            for (const [gram, count] of map) {
+                map.set(gram, 1 + Math.log(count));
+            }
+        }
+
+        return map;
+    };
+
+    const mapA = getNgrams(a);
+    const mapB = getNgrams(b);
+
+    // 3. 计算余弦相似度
+    let dot = 0;
+    let normA = 0;
+    let normB = 0;
+
+    // 范数计算
+    for (const count of mapA.values()) normA += count * count;
+    for (const count of mapB.values()) normB += count * count;
+
+    if (normA === 0 || normB === 0) return 0;
+
+    // 点积：遍历较小的 Map 以减少计算量
+    const [smaller, larger] = mapA.size <= mapB.size ? [mapA, mapB] : [mapB, mapA];
+    for (const [gram, count] of smaller) {
+        const otherCount = larger.get(gram);
+        if (otherCount) {
+            dot += count * otherCount;
+        }
+    }
+
+    const similarity = dot / (Math.sqrt(normA) * Math.sqrt(normB));
+
+    // 防止浮点误差导致超出范围
+    return Math.min(1, Math.max(0, similarity));
 }
