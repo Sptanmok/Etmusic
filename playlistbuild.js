@@ -1,9 +1,8 @@
-import { build } from "esbuild";
 import fs from "fs";
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
 import * as cheerio from 'cheerio';
-import path from 'path';
+import { escapeHtml, prepareDist, songHref, writeSongCatalog } from "./build-shared.js";
 //import { console } from "inspector";
 //喵喵喵！
 //await fs.promises.rm('dist', { recursive: true, force: true });
@@ -43,27 +42,16 @@ axiosRetry(axios, {
     return false;
   }
 });
-if (!fs.existsSync("dist")) fs.mkdirSync("dist", { recursive: true });
-if (!fs.existsSync("dist/musicfile")) fs.mkdirSync("dist/musicfile", { recursive: true });
-if (!fs.existsSync("dist/musicfile/img")) fs.mkdirSync("dist/musicfile/img", { recursive: true });
-await build({
-  entryPoints: ["src/player2.js"],
-  bundle: true,
-  minify: true,
-  outfile: "dist/player2.js"
-});
+await prepareDist();
 const gedang = fs.readFileSync(`neteaseplaylist.txt`, 'utf8')
 const playmusics = gedang.split(/\r?\n/);
 const index = fs.readFileSync("src/indexmoban.html", "utf8");
 const simplicityindexb = fs.readFileSync("src/index.html", "utf8");
-const template = fs.readFileSync("src/moban.html", "utf8");
-let liebiao = "";
-let liebiaoj = [];
+const songs = [];
 let o = 0;
 let mobanc =""
 let simplicitylibiao = ""
 async function start(){
-    let dd = 0;
     console.log("开始！");
     for(const playmusic of playmusics){
         const list = await axios.get(`${metingapi_url}?type=playlist&id=${playmusic.match(/\d+$/)}`,{headers: {'user-agent': user_agent}});
@@ -79,14 +67,14 @@ async function start(){
     }
     let indexhtml = index.replace(/{{link}}/g, mobanc).replace(/previous_button_hide/g, '')
     const simplicityindexr = simplicityindexb.replace(/{{link}}/g, simplicitylibiao)
-    fs.writeFileSync(`./dist/${indexpageo}.html`, indexhtml)
+    fs.writeFileSync(`./dist/${indexpageo === 1 ? 'index' : indexpageo}.html`, indexhtml)
     fs.writeFileSync(`./dist/simplicityindex.html`, simplicityindexr)
+    writeSongCatalog(songs)
     console.log("successfully")
 }
 let async_nu = 0
 let yureliebiao = "";
 let indexpageo = 1;
-let downfile_task;
 let rwd =[];
 async function jxgd(listd){
     let rw =[];
@@ -107,7 +95,6 @@ async function jxgd(listd){
         async_nu++;
         const musicid = musicd.url.match(/\d+$/);
         const metadata = {name:musicd.name, artist:musicd.artist}
-        liebiaoj.push(metadata)
         let json = await YrcToJson(musicid[0],metadata);
         if(qqyuan){
         //替补
@@ -137,27 +124,31 @@ async function jxgd(listd){
             async_nu--;
             return;
         }
-        const task = downMusicFilePut(json, musicd);
+        const basename = `${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}`;
+        const song = {
+            id: basename,
+            title: `${json.metadata.ti} - ${json.metadata.ar} · ${json.metadata.al}`,
+            audio: `${basename}.${jymaster ? 'flac' : 'mp3'}`,
+            lyrics: `${basename}.json`,
+            image: `img/${filenamecl(json.metadata.al)}.jpg`
+        };
+        songs.push(song);
+        const task = downMusicFilePut(json, musicd, song);
         rwd.push(task)
+        const href = songHref(song.id);
         mobanc +=`
-            <div class="card" url="./${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}.html">
-                <img src="./musicfile/img/${filenamecl(json.metadata.al)}.jpg" alt="${filenamecl(json.metadata.al)}专辑" class="card-image">
+            <a class="card" href="${href}" target="_blank" rel="noopener">
+                <img src="./musicfile/img/${filenamecl(json.metadata.al)}.jpg" alt="${escapeHtml(json.metadata.al)}专辑" class="card-image">
                 <div class="card-content">
                     <div>
-                        <h3 class="card-ti">${json.metadata.ti}</h3>
-                        <p class="card-ar">——${filenamecl(json.metadata.ar)}</p>
-                        <p class="card-al">${json.metadata.ti==json.metadata.al?"":filenamecl(json.metadata.al)}</p>
+                        <h3 class="card-ti">${escapeHtml(json.metadata.ti)}</h3>
+                        <p class="card-ar">——${escapeHtml(json.metadata.ar)}</p>
+                        <p class="card-al">${json.metadata.ti==json.metadata.al?"":escapeHtml(json.metadata.al)}</p>
                     </div>
                 </div>
-            </div>`
-        //liebiaoj.push({name:json.metadata.ti, artist:json.metadata.ar, album:json.metadata.al})
-        simplicitylibiao += `<li><a href="./${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}.html" target="_blank">${json.metadata.ti} - ${json.metadata.ar}${json.metadata.ti==json.metadata.al?"":" · "+json.metadata.al}</a></li>`
-        fs.writeFileSync(`dist/musicfile/${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}.json`,JSON.stringify(json), "utf8")
-        let ddyyweb = template
-            .replace(/{{title}}/g, `${json.metadata.ti} - ${json.metadata.ar} · ${json.metadata.al}`)
-            .replace(/{{filename}}/g, `${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}.${jymaster?'flac':'mp3'}`)
-            .replace('https://picsum.photos/400/400', `./musicfile/img/${filenamecl(json.metadata.al)}.jpg`)
-        fs.writeFileSync(`./dist/${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}.html`, ddyyweb)
+            </a>`
+        simplicitylibiao += `<li><a href="${href}" target="_blank">${escapeHtml(json.metadata.ti)} - ${escapeHtml(json.metadata.ar)}${json.metadata.ti==json.metadata.al?"":" · "+escapeHtml(json.metadata.al)}</a></li>`
+        fs.writeFileSync(`dist/musicfile/${song.lyrics}`,JSON.stringify(json), "utf8")
         //yureliebiao += encodeURI(`${yuming}${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}.html`) + `\n`
         //yureliebiao += encodeURI(`${yuming}musicfile/${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}.mp3`) +`\n`
         console.log(`${o}:${json.metadata.ti} - ${json.metadata.ar} · ${json.metadata.al}   is ok ,${json.metadata.apimode?json.metadata.apimode:"wyy"},now ppl:${(sesc_ppe/no_wyy*100).toFixed(2)}%`);
@@ -181,7 +172,7 @@ async function jxgd(listd){
     await Promise.all(rwd);
 }
 let async_downfile = 0;
-async function downMusicFilePut(json,musicd){
+async function downMusicFilePut(json,musicd,song){
     while(async_downfile >= async_downfile_max){
         await delay(50);
     }
@@ -195,7 +186,7 @@ async function downMusicFilePut(json,musicd){
         if(music.status===404){
             const music = await axios.get(musicd.url, { responseType: 'arraybuffer' ,headers: {'user-agent': user_agent},timeout: 60000});
             fs.writeFileSync(`./dist/musicfile/${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}.mp3`,music.data)
-            fs.writeFileSync(`./dist/${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}.html`,fs.readFileSync(`./dist/${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}.html`,"utf8").replace("flac", "mp3"))
+            song.audio = `${song.id}.mp3`;
         }else{
             fs.writeFileSync(`./dist/musicfile/${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}.flac`,music.data)
         }
@@ -746,11 +737,6 @@ async function metaload(musicid, name){
     }
     return {albumName,albumLink};
 }
-fs.copyFileSync("src/player2.css", "dist/player2.css");
-fs.copyFileSync("src/index.css", "dist/index.css");
-fs.copyFileSync("src/DSC00485.webp", "dist/DSC00485.webp");
-fs.copyFileSync("src/Saira-Light.woff2", "dist/Saira-Light.woff2");
-fs.copyFileSync("src/LXGWWenKai-Light.woff2", "dist/LXGWWenKai-Light.woff2");
 await start()
 fs.writeFileSync(`./nonono.txt`,sade)
 fs.writeFileSync(`./nononono.txt`,sadee)

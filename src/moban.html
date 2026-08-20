@@ -5,12 +5,12 @@
 <link rel="preload" href="./LXGWWenKai-Light.woff2" as="font" type="font/woff2" crossorigin="">
 <link rel="stylesheet" type="text/css" href="player2.css">
 <meta charset="utf-8">
-<title>{{title}}</title>
+<title>Mrachritmo</title>
 </head>
 <body>
 <canvas id="spectrumb"style="display: none;" height="250" class="canvasb-top"></canvas>
     <noscript>XWX, 呜哇, JS是必须的，目前环境不支持JS呜</noscript>
-    <img src="https://picsum.photos/400/400" width="400" height="400" title="歌曲/专辑图片" class="img"></img>
+    <img width="400" height="400" title="歌曲/专辑图片" class="img" hidden>
     <canvas id="spectrum" width="800" height="200"></canvas>
     <div class="main">
       <div>
@@ -19,12 +19,12 @@
       <p type="text" id="romalyric" style="font-size:10px;line-height:1px;"></p>
       <p type="text" id="pairlyric"></p>
       <br />
-      <audio id="audio" src="musicfile/{{filename}}" controls style="width:100%"></audio>
+      <audio id="audio" controls style="width:100%"></audio>
     </div>
 <div class="notification">
   <p>小提示：按t键（小写）可以切换歌词逐字模式哦</p>
 </div>
 <canvas id="spectrumd" style="display: none;" height="250" class="canvasb-ntop"></canvas>
-<script src="player2.js"></script>
+<script src="player.js"></script>
 </body>
 </html>

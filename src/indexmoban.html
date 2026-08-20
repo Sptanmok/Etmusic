@@ -28,18 +28,6 @@
 <div class="footer">
 </div>
 <script>
-document.querySelectorAll('.card').forEach(card => {
-    card.addEventListener('click', function() {
-        const title = this.querySelector('.card-ti').textContent;
-        const url = card.getAttribute('url')
-        window.open(url, '_blank');
-    });
-    card.addEventListener('click', function() {
-        const title = this.querySelector('.card-ti').textContent;
-        const url = card.getAttribute('url')
-        window.open(url, '_blank');
-    });
-});
 function getCurrentPage() {
   const path = window.location.pathname;
   const match = path.match(/\/(\d+)\.html$/);

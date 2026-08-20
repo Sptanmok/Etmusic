@@ -1,6 +1,7 @@
 let lyricpath;
 let currentLyricIndex = -1;
 let wordElements = [];
+const audio = document.getElementById('audio');
 const lyricElement = document.getElementById('lyric');
 const pairLyricElement = document.getElementById('pairlyric');
 const romaLyricElement = document.getElementById('romalyric');
@@ -26,7 +27,7 @@ const dataArray = new Uint8Array(bufferLength);
 const dd = audioContext.createMediaElementSource(audio);
 dd.connect(analyser);
 analyser.connect(audioContext.destination);
-main = document.querySelector(".main");
+const main = document.querySelector(".main");
 if(audio.getAttribute('lyricpath')){
 	lyricpath = audio.getAttribute('lyricpath');
 }else{
@@ -63,21 +64,18 @@ function initLyrics() {
     }
     suijsz.sort(() => Math.random() - 0.5)
     if ("mediaSession" in navigator) {
+        const artwork = alimg && alimg.getAttribute('src') ? [{
+            src: alimg.src,
+            sizes: "1400x1400",
+            type: "image/jpeg"
+        }] : [];
         navigator.mediaSession.metadata = new MediaMetadata({
             title: jsonlyrics.metadata.ti,
             artist: jsonlyrics.metadata.ar,
             album: jsonlyrics.metadata.al,
-            artwork: [
-            {
-                src: alimg.src,
-                sizes: "1400x1400",
-                type: "image/jpeg"
-            }
-            ]
+            artwork
         });
     }
-    const audio = document.getElementById('audio');
-
     // Low-latency bridge to the desktop lyrics overlay.
     let lyricsBridge;
     let lyricsBridgeRetry;
