@@ -2,6 +2,7 @@ import fs from "fs";
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
 import * as cheerio from 'cheerio';
+import { pathToFileURL } from 'url';
 import { escapeHtml, prepareDist, songHref, writeSongCatalog } from "./build-shared.js";
 //import { console } from "inspector";
 //喵喵喵！
@@ -22,6 +23,7 @@ const user_agent_b = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.
 const trytoqqlyric = true;
 const jymaster = false;
 const qqmusic_timeout = 15000;
+const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
 let no_wyy = 0;
 let sesc_ppe = 0;
 //↑↑↑配置处↑↑↑
@@ -42,7 +44,7 @@ axiosRetry(axios, {
     return false;
   }
 });
-await prepareDist();
+if (isMain) await prepareDist();
 const gedang = fs.readFileSync(`neteaseplaylist.txt`, 'utf8')
 const playmusics = gedang.split(/\r?\n/);
 const index = fs.readFileSync("src/indexmoban.html", "utf8");
@@ -72,6 +74,7 @@ async function start(){
     writeSongCatalog(songs)
     console.log("successfully")
 }
+export { start };
 let async_nu = 0
 let yureliebiao = "";
 let indexpageo = 1;
@@ -93,45 +96,13 @@ async function jxgd(listd){
     }
     async function amusic(musicd, o){
         async_nu++;
-        const musicid = musicd.url.match(/\d+$/);
-        const metadata = {name:musicd.name, artist:musicd.artist}
-        let json = await YrcToJson(musicid[0],metadata);
-        if(qqyuan){
-        //替补
-            let jsonq;
-            if(trytoqqlyric||!json.metadata.zq){
-                no_wyy++;
-                jsonq= await QQJsonGET(json.metadata.ti,json.metadata.ar,json.metadata.al,json);
-                if(jsonq && jsonq.metadata.zq){
-                    const r = json
-                    json = jsonq
-                    json.metadataq = json.metadata
-                    json.metadata.ti = r.metadata.ti
-                    json.metadata.ar = r.metadata.ar
-                    json.metadata.al = r.metadata.al
-                    json.metadata.CLXIIIid = r.metadata.CLXIIIid
-                    json.lyrict = r
-                }else if(jsonq){
-                    json.lyricq = jsonq
-                    sesc_ppe++;
-                }else{
-                    sesc_ppe++;
-                }
-            }
-        }
-        
+        const resolved = await resolveSong(musicd);
+        const json = resolved && resolved.json;
         if(!json) {
             async_nu--;
             return;
         }
-        const basename = `${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}`;
-        const song = {
-            id: basename,
-            title: `${json.metadata.ti} - ${json.metadata.ar} · ${json.metadata.al}`,
-            audio: `${basename}.${jymaster ? 'flac' : 'mp3'}`,
-            lyrics: `${basename}.json`,
-            image: `img/${filenamecl(json.metadata.al)}.jpg`
-        };
+        const song = songManifest(json);
         songs.push(song);
         const task = downMusicFilePut(json, musicd, song);
         rwd.push(task)
@@ -172,26 +143,36 @@ async function jxgd(listd){
     await Promise.all(rwd);
 }
 let async_downfile = 0;
-async function downMusicFilePut(json,musicd,song){
+export async function downMusicFilePut(json,musicd,song,{force = false} = {}){
     while(async_downfile >= async_downfile_max){
         await delay(50);
     }
     async_downfile++;
-    if(!fs.existsSync(`./dist/musicfile/${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}.mp3`)&&!jymaster){
-        const music = await axios.get(musicd.url, { responseType: 'arraybuffer' ,headers: {'user-agent': user_agent},timeout: 60000});
-        fs.writeFileSync(`./dist/musicfile/${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}.mp3`,music.data)
-    }
-    if(!fs.existsSync(`./dist/musicfile/${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}.flac`)&&jymaster){
-        const music = await axios.post("http://127.0.0.1:5000/download",{"id": json.metadata.CLXIIIid,"quality": "jymaster"}, {validateStatus: function (status) {return (status==200)||(status==404);}, responseType: 'arraybuffer' ,headers: {'user-agent': user_agent},timeout: 500000});
-        if(music.status===404){
+    try {
+        const basename = `${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}`;
+        const mp3Path = `./dist/musicfile/${basename}.mp3`;
+        const flacPath = `./dist/musicfile/${basename}.flac`;
+        const replaceFile = async (file, data) => {
+            const temporary = `${file}.${process.pid}.${Date.now()}.tmp`;
+            await fs.promises.writeFile(temporary, data);
+            await fs.promises.rm(file, { force: true });
+            await fs.promises.rename(temporary, file);
+        };
+        if(!jymaster && (!fs.existsSync(mp3Path) || force)){
             const music = await axios.get(musicd.url, { responseType: 'arraybuffer' ,headers: {'user-agent': user_agent},timeout: 60000});
-            fs.writeFileSync(`./dist/musicfile/${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}.mp3`,music.data)
-            song.audio = `${song.id}.mp3`;
-        }else{
-            fs.writeFileSync(`./dist/musicfile/${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}.flac`,music.data)
+            await replaceFile(mp3Path,music.data)
         }
-    }
-    if(jymaster){
+        if(jymaster && (!fs.existsSync(flacPath) || force)){
+            const music = await axios.post("http://127.0.0.1:5000/download",{"id": json.metadata.CLXIIIid,"quality": "jymaster"}, {validateStatus: function (status) {return (status==200)||(status==404);}, responseType: 'arraybuffer' ,headers: {'user-agent': user_agent},timeout: 500000});
+            if(music.status===404){
+                const music = await axios.get(musicd.url, { responseType: 'arraybuffer' ,headers: {'user-agent': user_agent},timeout: 60000});
+                await replaceFile(mp3Path,music.data)
+                song.audio = `${song.id}.mp3`;
+            }else{
+                await replaceFile(flacPath,music.data)
+            }
+        }
+        if(jymaster){
         const filePath = `./dist/musicfile/${filenamecl_old(json.metadata.ti)} - ${filenamecl_old(json.metadata.ar)} · ${filenamecl_old(json.metadata.al)}.flac`
         if(filePath!==`./dist/musicfile/${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}.flac`){
             fs.access(filePath, fs.constants.F_OK, (err) => {
@@ -210,8 +191,10 @@ async function downMusicFilePut(json,musicd,song){
                 });
             });
         }
+        }
+    } finally {
+        async_downfile--;
     }
-    async_downfile--;
 }
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -729,19 +712,21 @@ async function metaload(musicid, name){
             dataSrcList.push(dataSrc);
             }
         });
-        const imageResponse = await axios.get(dataSrcList[0], { responseType: 'arraybuffer' ,timeout: 30000});
-        fs.writeFile(`./dist/musicfile/img/${filenamecl(albumName)}.jpg`, imageResponse.data, (err) => {//以专辑名作为名称，减少空间浪费
-            picerr+=err?`${err}\n`:''
-            yureliebiao += encodeURI(`${yuming}musicfile/img/${filenamecl(albumName)}.jpg`) +`\n`
-        });
+        if (dataSrcList.length!==0) {
+            const imageResponse = await axios.get(dataSrcList[0], { responseType: 'arraybuffer' ,timeout: 30000});
+            await fs.promises.writeFile(`./dist/musicfile/img/${filenamecl(albumName)}.jpg`, imageResponse.data);
+            yureliebiao += encodeURI(`${yuming}musicfile/img/${filenamecl(albumName)}.jpg`) +`\n`;
+        }
     }
     return {albumName,albumLink};
 }
-await start()
-fs.writeFileSync(`./nonono.txt`,sade)
-fs.writeFileSync(`./nononono.txt`,sadee)
-fs.writeFileSync(`./picerr.txt`,picerr)
-fs.writeFileSync(`./yureurl.txt`,yureliebiao)
+if (isMain) {
+    await start()
+    fs.writeFileSync(`./nonono.txt`,sade)
+    fs.writeFileSync(`./nononono.txt`,sadee)
+    fs.writeFileSync(`./picerr.txt`,picerr)
+    fs.writeFileSync(`./yureurl.txt`,yureliebiao)
+}
 /*
 function sjzzh(sjzx){
     sjz = parseInt(sjzx);
@@ -927,4 +912,40 @@ function lyricsSimilarity(lyricsA, lyricsB, options = {}) {
 
     // 防止浮点误差导致超出范围
     return Math.min(1, Math.max(0, similarity));
+}
+export function songManifest(json){
+    const basename = `${filenamecl(json.metadata.ti)} - ${filenamecl(json.metadata.ar)} · ${filenamecl(json.metadata.al)}`;
+    return {
+        id: basename,
+        title: `${json.metadata.ti} - ${json.metadata.ar} · ${json.metadata.al}`,
+        audio: `${basename}.${jymaster ? 'flac' : 'mp3'}`,
+        lyrics: `${basename}.json`,
+        image: `img/${filenamecl(json.metadata.al)}.jpg`
+    };
+}
+export async function resolveSong(musicd){
+    const musicid = musicd.url && musicd.url.match(/\d+$/);
+    if(!musicid) return null;
+    const metadata = { name: musicd.name, artist: musicd.artist };
+    let json = await YrcToJson(musicid[0], metadata);
+    if(qqyuan && (trytoqqlyric || !json.metadata.zq)){
+        no_wyy++;
+        const jsonq = await QQJsonGET(json.metadata.ti, json.metadata.ar, json.metadata.al, json);
+        if(jsonq && jsonq.metadata.zq){
+            const wyy = json;
+            json = jsonq;
+            json.metadataq = json.metadata;
+            json.metadata.ti = wyy.metadata.ti;
+            json.metadata.ar = wyy.metadata.ar;
+            json.metadata.al = wyy.metadata.al;
+            json.metadata.CLXIIIid = wyy.metadata.CLXIIIid;
+            json.lyrict = wyy;
+        }else if(jsonq){
+            json.lyricq = jsonq;
+            sesc_ppe++;
+        }else{
+            sesc_ppe++;
+        }
+    }
+    return { json, musicid: musicid[0] };
 }

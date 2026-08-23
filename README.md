@@ -95,6 +95,15 @@ npm run 163musicbuild
 
 会优先通过网易云音乐获取歌词，如果没有逐词会尝试使用QQ音乐歌词
 
+如果只需要在部署后检查歌单变化，可使用增量更新命令：
+
+```
+npm run 163musicupdate
+```
+
+该命令使用 `dist/.playlist-state.json` 保存歌单快照，只处理新增或发生变化的歌曲；
+歌单请求全部失败时不会覆盖现有资源。
+
 <!--
 
 如果出现错误Error: You installed esbuild for another platform than the one you're currently using.
